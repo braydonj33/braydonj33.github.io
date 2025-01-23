@@ -3,5 +3,5 @@
 </div>
 
 <div align="center">
-  <button class="button" type="submit">Post comment</button>
+  <button class="pill" type="submit">Post comment</button>
 </div>

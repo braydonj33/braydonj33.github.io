@@ -1,13 +1,7 @@
-About Me
-==
+<div align="center">
+  <h1>Home</h1>
+</div>
 
-<table border="0">
- <tr>
-    <td><img src="docs/assets/Headshot.png" alt="Alt Text" width="300" height="200"></td>
-    <td>Lorem ipsum .2..</td>
- </tr>
- <tr>
-    <td>Lorem ipsum ...</td>
- </tr>
-</table>
-
+<div align="center">
+  <img src="docs/assets/Headshot.png" alt="Alt Text" width="270" height="270">
+</div>

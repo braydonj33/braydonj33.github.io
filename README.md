@@ -3,7 +3,7 @@
 </div>
 
 <div align="center">
-  <a href="https://www.braydon.site">
-    <button class="pill" type="submit">Post comment</button>
+  <a href="https://www.braydon.site/about-me">
+    <button class="pill" type="submit">Test</button>
   </a>
 </div>

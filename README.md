@@ -2,4 +2,4 @@ About Me
 ==
 
 
-![image](docs/assets/headshot.png)
+![image](docs/assets/Headshot.png)

@@ -3,5 +3,6 @@
 </div>
 
 <div align="center">
-   <h3>My name is Braydon Scott</h3>
+  <img src="../docs/assets/Headshot.png" alt="Alt Text" width="270" height="270">
+  <h3>My name is Braydon Scott</h3>
 </div>

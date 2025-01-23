@@ -3,5 +3,5 @@
 </div>
 
 <div align="center">
-   <h2>My name is Braydon Scott</h2>
+   <h3>My name is Braydon Scott</h3>
 </div>

@@ -3,9 +3,5 @@
 </div>
 
 <div align="center">
-  [<kbd> <br> KeyBinding Button <br> </kbd>][KBD]
+  <button class="button" type="submit">Post comment</button>
 </div>
-
-
-
-[KBD]: Types/KBD.md

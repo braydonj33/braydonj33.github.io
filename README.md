@@ -3,5 +3,7 @@
 </div>
 
 <div align="center">
-  <button class="pill" type="submit">Post comment</button>
+  <a href="https://www.braydon.site">
+    <button class="pill" type="submit">Post comment</button>
+  </a>
 </div>

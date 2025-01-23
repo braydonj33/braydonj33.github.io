@@ -1,8 +1,5 @@
-Header 1
+About Me
 ==
 
-Header 2
---
 
-
-![image](docs/assets/UK.JPG)
+![image](docs/assets/headshot.png)

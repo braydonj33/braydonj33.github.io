@@ -26,6 +26,7 @@ header h1 {
 
 nav {
     /* Navigation styles already good, maybe adjust spacing if needed */
+    color: black;
 }
 
 nav a {

@@ -26,11 +26,10 @@ header h1 {
 
 nav {
     /* Navigation styles already good, maybe adjust spacing if needed */
-    color: black;
+    color: #f0f0f0;
 }
 
 nav a {
-    color: #f0f0f0;
     margin: 20px 20px; /* Slightly increase horizontal spacing in nav */
     text-decoration: none;
     font-weight: 500; /* Slightly lighter font weight for nav links */

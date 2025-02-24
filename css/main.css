@@ -6,7 +6,7 @@
 
 header {
     background: rgba(20, 20, 20, 0.9); /* Darker header background */
-    padding: 20px 0; /* Reduce horizontal padding and add vertical padding */
+    padding: 50px 0; /* Reduce horizontal padding and add vertical padding */
     backdrop-filter: blur(10px); /* Keep blur effect */
     position: sticky; /* Make header stick to top on scroll */
     top: 0;

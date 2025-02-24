@@ -31,7 +31,7 @@ nav {
 
 nav a {
     color: black;
-    margin: 0 20px; /* Slightly increase horizontal spacing in nav */
+    margin: 20px 20px; /* Slightly increase horizontal spacing in nav */
     text-decoration: none;
     font-weight: 500; /* Slightly lighter font weight for nav links */
     letter-spacing: 0.3px; /* Slight letter spacing for nav links */

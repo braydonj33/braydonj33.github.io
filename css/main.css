@@ -26,7 +26,6 @@ nav {
 }
 
 nav a {
-    color: #000000;
     margin: 0 20px; /* Slightly increase horizontal spacing in nav */
     text-decoration: none;
     font-weight: 500; /* Slightly lighter font weight for nav links */
@@ -37,5 +36,4 @@ nav a {
 nav a:hover {
     /* text-decoration: underline;  Consider removing underline for a cleaner look, and use text-shadow instead */
     text-shadow: 0 0 5px rgba(150, 150, 150, 0.8); /* Subtle text shadow on hover */
-    color: #ffffff; /* Slightly brighten text on hover */
 }

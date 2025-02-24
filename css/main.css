@@ -15,6 +15,7 @@ header {
 }
 
 header h1 {
+    color: black;
     font-size: 2em; /* Adjust heading size */
     margin-bottom: 10px; /* Add space below heading */
     font-weight: bold; /* Make heading bold */
@@ -23,10 +24,11 @@ header h1 {
 
 nav {
     /* Navigation styles already good, maybe adjust spacing if needed */
+    color: black;
 }
 
 nav a {
-    color: #000000;
+    color: black;
     margin: 0 20px; /* Slightly increase horizontal spacing in nav */
     text-decoration: none;
     font-weight: 500; /* Slightly lighter font weight for nav links */

@@ -17,6 +17,7 @@ header {
 header h1 {
     color: black;
     font-size: 2em; /* Adjust heading size */
+    margin-top: 20px;
     margin-bottom: 10px; /* Add space below heading */
     font-weight: bold; /* Make heading bold */
     letter-spacing: 0.5px; /* Slightly increase letter spacing for a modern look */

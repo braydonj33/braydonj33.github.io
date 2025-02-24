@@ -4,6 +4,16 @@
     padding: 0;              /* Reset paddings */
 }
 
+header {
+    background: rgba(20, 20, 20, 0.9); /* Darker header background */
+    padding: 20px 0; /* Reduce horizontal padding and add vertical padding */
+    backdrop-filter: blur(10px); /* Keep blur effect */
+    position: sticky; /* Make header stick to top on scroll */
+    top: 0;
+    z-index: 100; /* Ensure header is above other elements */
+    text-align: center; /* Center header content */
+}
+
 header h1 {
     font-size: 2em; /* Adjust heading size */
     margin-bottom: 10px; /* Add space below heading */

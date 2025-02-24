@@ -40,3 +40,9 @@ nav a:hover {
     /* text-decoration: underline;  Consider removing underline for a cleaner look, and use text-shadow instead */
     text-shadow: 0 0 5px rgba(150, 150, 150, 0.8); /* Subtle text shadow on hover */
 }
+
+main {
+    padding: 60px 20px; /* Increase top padding for more space from header */
+    max-width: 960px;   /* Limit main content width for better readability on large screens */
+    margin: 0 auto;      /* Center main content on the page */
+}

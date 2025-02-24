@@ -15,11 +15,11 @@ header {
 }
 
 header h1 {
-    /*color: black;*/
+    color: black;
     font-size: 2em; /* Adjust heading size */
-    padding: 20px 0;
-    margin-top: 20px;
-    margin-bottom: 10px; /* Add space below heading */
+    padding: 50px 0;
+    margin-top: 50px;
+    margin-bottom: 25px; /* Add space below heading */
     font-weight: bold; /* Make heading bold */
     letter-spacing: 0.5px; /* Slightly increase letter spacing for a modern look */
 }
@@ -29,8 +29,8 @@ nav {
 }
 
 nav a {
-    color: #f0f0f0;
-    margin: 20px 20px; /* Slightly increase horizontal spacing in nav */
+    color: black;
+    margin: 50px 20px; /* Slightly increase horizontal spacing in nav */
     text-decoration: none;
     font-weight: 500; /* Slightly lighter font weight for nav links */
     letter-spacing: 0.3px; /* Slight letter spacing for nav links */

@@ -1,1 +1,33 @@
-
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Missing children: origin and destination flows</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<style>
+:root{
+  --bg:#E7EBED; --panel:#F6F7F7; --ink:#1A2630; --muted:#5A6874; --rule:#CBD3D8;
+  --water:#D0DCE3; --land:#F3F4F1; --ua:#DFE8EF; --ua-edge:#7893A8; --border:#A2AEB6;
+  --src:#2A5B89; --dst:#8C2E3B; --on-src:#FFFFFF; --warn:#7A5A10; --warn-bg:#F3EAD3;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11191F; --panel:#172129; --ink:#E3E9ED; --muted:#93A1AB; --rule:#2B3943;
+    --water:#0E1A22; --land:#1C2830; --ua:#21374A; --ua-edge:#5F84A3; --border:#43535E;
+    --src:#7DB0E3; --dst:#E58894; --on-src:#0E1A22; --warn:#E8C77A; --warn-bg:#2E2814;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11191F; --panel:#172129; --ink:#E3E9ED; --muted:#93A1AB; --rule:#2B3943;
+  --water:#0E1A22; --land:#1C2830; --ua:#21374A; --ua-edge:#5F84A3; --border:#43535E;
+  --src:#7DB0E3; --dst:#E58894; --on-src:#0E1A22; --warn:#E8C77A; --warn-bg:#2E2814;
+}
+*,*::before,*::after{box-sizing:inherit}

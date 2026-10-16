@@ -31,3 +31,1231 @@
   --src:#7DB0E3; --dst:#E58894; --on-src:#0E1A22; --warn:#E8C77A; --warn-bg:#2E2814;
 }
 *,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 380px;height:100%}
+.map{position:relative;overflow:hidden;min-height:0;background:var(--water)}
+#svg{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
+#svg:active{cursor:grabbing}
+.legend svg{display:block;flex:none}
+aside{background:var(--panel);border-left:1px solid var(--rule);overflow-y:auto;padding:28px 24px 48px}
+h1{font-size:22px;line-height:1.25;font-weight:650;margin:0 0 6px;letter-spacing:-.01em;max-width:22ch}
+.status{color:var(--muted);font-size:13px;margin:0}
+h2{font-size:15px;font-weight:600;margin:30px 0 10px}
+p{margin:0 0 10px}
+.hint{color:var(--muted);font-size:12.5px;line-height:1.45}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-size:13.5px;color:var(--ink);background:transparent;border:1px solid var(--rule);
+  border-radius:6px;padding:7px 12px;cursor:pointer;line-height:1.2}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--src);border-color:var(--src);color:var(--on-src);font-weight:500}
+.btn.quiet{border-color:transparent;color:var(--muted);padding-left:4px;padding-right:4px}
+.btn.quiet:hover{color:var(--ink)}
+.btn:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible,.rank button:focus-visible{outline:2px solid var(--src);outline-offset:2px}
+input[type=file]{display:none}
+details{margin-top:12px}
+summary{cursor:pointer;font-size:13.5px;color:var(--ink)}
+textarea{width:100%;min-height:120px;margin:8px 0;font:12.5px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:6px;padding:8px}
+pre{background:var(--bg);border:1px solid var(--rule);border-radius:6px;padding:10px;font-size:12px;line-height:1.5;
+  overflow-x:auto;margin:8px 0;user-select:all}
+table.cols{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:8px}
+table.cols td{padding:4px 6px 4px 0;vertical-align:top;border-top:1px solid var(--rule)}
+table.cols td:first-child{white-space:nowrap;font-weight:500;padding-right:10px}
+label.field{display:block;font-size:13px;margin:12px 0 4px;color:var(--ink)}
+select,input[type=number],input[type=text]{font:inherit;font-size:13.5px;color:var(--ink);background:var(--bg);
+  border:1px solid var(--rule);border-radius:6px;padding:6px 8px;width:100%}
+.pair{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+.pair span{color:var(--muted);font-size:12.5px}
+input[type=range]{width:100%;accent-color:var(--src)}
+.check{display:flex;gap:8px;align-items:center;font-size:13px;margin-top:12px;cursor:pointer}
+.check input{accent-color:var(--src);width:16px;height:16px}
+.summary{font-size:15px;line-height:1.5;margin:0}
+.summary strong{font-weight:650}
+.ranks{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:6px}
+.ranks h3{font-size:13px;font-weight:600;margin:0 0 6px;display:flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.dot.src{background:var(--src)} .dot.dst{border:1.6px solid var(--dst)}
+.rank{list-style:none;margin:0;padding:0}
+.rank button{all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;padding:4px 0 5px;border-radius:4px}
+.rank button:hover .nm{text-decoration:underline}
+.rank .line{display:flex;justify-content:space-between;gap:6px;font-size:12.5px}
+.rank .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank .val{color:var(--muted);flex:none}
+.rank .bar{height:3px;border-radius:2px;margin-top:3px;background:var(--src);opacity:.75}
+.rank.dst .bar{background:var(--dst)}
+.rank button[aria-pressed=true] .nm{font-weight:600}
+.warnbox{background:var(--warn-bg);color:var(--warn);border-radius:6px;padding:10px 12px;font-size:12.5px;margin-top:14px}
+.warnbox ul{margin:6px 0 0;padding-left:18px}
+.err{color:var(--dst);font-size:13px;margin-top:10px}
+/* map overlays */
+.banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--dst);
+  color:var(--dst);border-radius:6px;padding:6px 12px;font-size:12.5px;font-weight:500;max-width:calc(100% - 24px);text-align:center}
+.chip{position:absolute;top:12px;left:12px;background:var(--panel);border:1px solid var(--rule);border-radius:6px;
+  padding:5px 6px 5px 10px;font-size:13px;display:flex;gap:6px;align-items:center;max-width:calc(100% - 120px)}
+.banner:not([hidden]) ~ .chip{top:52px}
+.chip[hidden],.banner[hidden],.empty[hidden],.tip[hidden]{display:none}
+.zoom{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:4px}
+.zoom .btn{background:var(--panel);width:34px;height:34px;padding:0;font-size:16px}
+.legend{position:absolute;left:12px;bottom:12px;background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--rule);
+  border-radius:8px;padding:10px 12px;font-size:12px;color:var(--ink);max-width:calc(100% - 24px)}
+.legend .lrow{display:flex;align-items:center;gap:8px;margin-top:4px}
+.legend .note{color:var(--muted);margin-top:6px}
+.caption{position:absolute;right:12px;bottom:12px;font-size:11.5px;color:var(--muted);max-width:40%;text-align:right;
+  background:color-mix(in srgb,var(--panel) 80%,transparent);padding:3px 6px;border-radius:4px}
+.caption:empty{display:none}
+.map.has-inset .legend{left:auto;right:12px;width:270px}
+.map.has-inset .caption{display:none}
+.inset-frame{stroke:var(--rule);stroke-width:1}
+.inset-title{font-size:12px;font-weight:600;fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:3px;pointer-events:none}
+.fac-label{font-size:11px;font-weight:600;fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:3px;stroke-linejoin:round;pointer-events:none}
+.fac .seg{stroke:var(--panel);stroke-width:.6}
+.fac{cursor:default}
+.fac-mark{fill:var(--ink);stroke:var(--panel);stroke-width:1}
+.legend .lsec{margin-top:10px}
+.legend .facgrid{display:grid;grid-template-columns:1fr;gap:2px 10px;margin-top:4px}
+.legend .sw{width:10px;height:10px;border-radius:2px;display:inline-block;flex:none}
+.locator{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3;pointer-events:none}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--rule);border-radius:6px;
+  padding:8px 10px;font-size:13px;max-width:260px;box-shadow:0 4px 14px rgba(10,20,30,.12);z-index:5}
+.tip b{font-weight:600}
+.tip .m{color:var(--muted);font-size:12px}
+.empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.empty div{pointer-events:auto;background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:18px 20px;max-width:340px;margin:16px}
+.empty p{font-size:14px}
+/* svg */
+.sea{fill:var(--water)} .land{fill:var(--land)}
+.ua{fill:var(--ua);stroke:var(--ua-edge);stroke-width:1.1;vector-effect:non-scaling-stroke}
+.borders{fill:none;stroke:var(--border);stroke-width:.7;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.grat{fill:none;stroke:var(--rule);stroke-width:.5;vector-effect:non-scaling-stroke;opacity:.7}
+.user-layer{fill:var(--dst);fill-opacity:.07;stroke:var(--dst);stroke-width:1;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}
+.geo-label{fill:var(--muted);font-size:12.5px;opacity:.8;pointer-events:none}
+.geo-label.water{font-style:italic}
+.flow{cursor:pointer}
+.n-out{fill:var(--src);stroke:var(--panel);stroke-width:1}
+.n-in{fill:var(--dst);fill-opacity:.12;stroke:var(--dst);stroke-width:1.6}
+.node{cursor:pointer}
+.place{font-size:11.5px;font-weight:500;fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:3px;stroke-linejoin:round;pointer-events:none}
+@media (max-width:880px){
+  html,body{height:auto}
+  .app{grid-template-columns:1fr;height:auto}
+  .map{height:62svh;min-height:380px}
+  aside{border-left:0;border-top:1px solid var(--rule);overflow:visible}
+  .caption{display:none}
+  .map.has-inset{height:82svh;min-height:560px}
+  .map.has-inset .legend{left:12px;right:auto;width:auto}
+  .legend .facgrid{grid-template-columns:1fr 1fr}
+  .legend{font-size:11px;padding:7px 9px}
+  .legend .note,.legend .keys{display:none}
+  .banner{font-size:11.5px}
+  .banner:not([hidden]) ~ .chip{top:64px}
+}
+@media (prefers-reduced-motion:no-preference){ .flow,.node{transition:opacity .18s} }
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="map" id="map" aria-label="Map of origin and destination flows">
+    <svg id="svg" role="img" aria-labelledby="title"></svg>
+    <div class="banner" id="banner" hidden>Fictional sample data. The numbers are random and describe no real events.</div>
+    <div class="chip" id="chip" hidden><span id="chipText"></span><button class="btn quiet" id="chipClear" aria-label="Show all flows">Show all</button></div>
+    <div class="zoom">
+      <button class="btn" id="zin" aria-label="Zoom in">+</button>
+      <button class="btn" id="zout" aria-label="Zoom out">−</button>
+      <button class="btn" id="zfit" aria-label="Fit map to data" title="Fit to data">⤢</button>
+    </div>
+    <div class="legend" id="legend" hidden></div>
+    <div class="caption" id="caption"></div>
+    <div class="tip" id="tip" hidden></div>
+    <div class="empty" id="empty">
+      <div>
+        <p><b>No data loaded yet.</b></p>
+        <p class="hint">Upload a CSV with one row per origin–destination pair and a count. Each row becomes a line from where children were taken from to where they were taken.</p>
+        <div class="row" style="margin-top:12px"><button class="btn primary" data-act="upload">Upload CSV</button><button class="btn" data-act="sample">Try fictional sample</button></div>
+      </div>
+    </div>
+  </main>
+
+  <aside>
+    <h1 id="title">Missing children: origin and destination flows</h1>
+    <p class="status" id="status">No data loaded</p>
+
+    <h2>Data</h2>
+    <div class="row">
+      <button class="btn primary" data-act="upload">Upload CSV</button>
+      <button class="btn" data-act="project">Load group project data</button>
+      <button class="btn" data-act="sample">Load fictional sample</button>
+      <button class="btn quiet" id="clearData">Clear data</button>
+    </div>
+    <input type="file" id="file" accept=".csv,.tsv,.txt,text/csv">
+    <div class="err" id="err" role="alert"></div>
+    <div id="unmatched"></div>
+    <label class="field">Facilities layer</label>
+    <div class="row">
+      <button class="btn" id="facUpload">Upload facilities CSV</button>
+      <button class="btn quiet" id="facRemove" hidden>Remove facilities</button>
+    </div>
+    <input type="file" id="facFile" accept=".csv,.tsv,.txt,text/csv">
+    <p class="hint" id="facStatus" style="margin-top:6px">Optional. Columns: place, type, count, and lat/lon for places the map doesn't recognise. Each place gets a bar split by facility type.</p>
+    <label class="check" id="facToggleWrap" hidden><input type="checkbox" id="facToggle" checked> Show facility bars</label>
+    <details>
+      <summary>Paste CSV text instead</summary>
+      <textarea id="paste" spellcheck="false" placeholder="source,destination,count&#10;Mariupol,Rostov-on-Don,120"></textarea>
+      <button class="btn" id="drawPaste">Draw pasted data</button>
+    </details>
+    <details>
+      <summary>Expected columns</summary>
+      <table class="cols">
+        <tr><td>source</td><td>Place children were taken from. Oblast, city or town name. Also accepts origin, from.</td></tr>
+        <tr><td>destination</td><td>Place children were taken to. Also accepts dest, to.</td></tr>
+        <tr><td>count</td><td>Number of children for that pair. Also accepts n, children, total.</td></tr>
+        <tr><td>period</td><td>Optional. Year, month or quarter, written so it sorts correctly (2022-Q3, 2023-05).</td></tr>
+        <tr><td>category</td><td>Optional. Any grouping, such as verification status or age band.</td></tr>
+        <tr><td>source_lat, source_lon, dest_lat, dest_lon</td><td>Optional. Needed only for places the built-in list doesn't recognise. They override the list when present.</td></tr>
+      </table>
+      <pre>source,destination,count,period,category,source_lat,source_lon,dest_lat,dest_lon
+Mariupol,Rostov-on-Don,120,2022-Q2,Verified,,,,
+Kherson oblast,Anapa,45,2022-Q4,Reported,,,,
+Example village,Example town,8,2023-Q1,Reported,47.10,37.20,52.10,41.30</pre>
+      <p class="hint">Rows with the same source and destination are added together. Oblast, krai and province names map to their administrative centre. About 170 places in Ukraine, Russia, Belarus and North Korea are recognised in English, Ukrainian or Russian spelling, and Korean for North Korean places. A country name such as "North Korea" maps to its capital.</p>
+    </details>
+
+    <section id="filters" hidden>
+      <h2>Show</h2>
+      <div id="catWrap"><label class="field" for="cat">Category</label><select id="cat"></select></div>
+      <div id="perWrap"><label class="field">Period</label>
+        <div class="pair"><select id="pFrom" aria-label="Period from"></select><span>to</span><select id="pTo" aria-label="Period to"></select></div>
+      </div>
+      <label class="field" for="minc">Hide routes with fewer than <b id="mincVal">1</b> children</label>
+      <input type="range" id="minc" min="1" max="100" value="1">
+      <label class="check"><input type="checkbox" id="allLabels"> Label every place</label>
+    </section>
+
+    <section id="totals" hidden>
+      <h2>In view</h2>
+      <p class="summary" id="summary"></p>
+      <div class="ranks">
+        <div><h3><span class="dot src"></span>Top origins</h3><ul class="rank src" id="rankSrc"></ul></div>
+        <div><h3><span class="dot dst"></span>Top destinations</h3><ul class="rank dst" id="rankDst"></ul></div>
+      </div>
+      <p class="hint" style="margin-top:10px">Select a place here or on the map to isolate its routes.</p>
+    </section>
+
+    <h2>Sharing</h2>
+    <label class="field" for="mask">Mask counts below</label>
+    <input type="number" id="mask" min="0" step="1" value="0">
+    <p class="hint" style="margin-top:6px">Counts under this number appear as "fewer than N" on the map and in the lists. Useful before sharing screenshots where small numbers could identify individual children. 0 turns masking off.</p>
+    <label class="field" for="note">Source line shown on the map</label>
+    <input type="text" id="note" placeholder="e.g. Source: organisation name, data as of date">
+    <div id="exportWrap" hidden>
+      <label class="field">Export the current view</label>
+      <div class="row"><button class="btn" id="expPng">Export PNG</button><button class="btn" id="expSvg">Export SVG</button></div>
+      <p class="hint" style="margin-top:6px">Exports what the map shows now, with your filters, zoom, focus and masking, plus a title, legend and your source line. PNG is high resolution for slides and documents; SVG stays editable in Illustrator, Inkscape or Figma.</p>
+      <p class="hint" id="exportMsg" role="status"></p>
+    </div>
+    <p class="hint" id="exportNone" hidden></p>
+    
+    <p class="hint" style="margin-top:6px">Data you load stays in this browser only. It is not uploaded or shared with anyone who opens this page's link.</p>
+
+    <h2>Basemap</h2>
+    <label class="field" for="extent">Map extent</label>
+    <select id="extent">
+      <option value="pacific">Ukraine to the Pacific, including North Korea</option>
+      <option value="europe">Ukraine and European Russia</option>
+      <option value="data">Fit to the data</option>
+    </select>
+    <p class="hint" style="margin-top:6px">Every place in your data stays on the map whichever extent you choose.</p>
+    <label class="check"><input type="checkbox" id="insetToggle" checked> Show an enlarged inset of Ukraine</label>
+    <p class="hint" style="margin-top:6px">Origins in Ukraine sit close together on a map this wide. The inset spreads them out and labels them, while the main map shows where routes end.</p>
+    <p class="hint" id="baseStatus">Loading boundaries…</p>
+    <div class="row">
+      <button class="btn" id="addLayer">Add boundary layer (GeoJSON)</button>
+      <button class="btn quiet" id="removeLayer" hidden>Remove layer</button>
+    </div>
+    <input type="file" id="geofile" accept=".geojson,.json,application/geo+json,application/json">
+    <p class="hint" style="margin-top:8px">Use this for oblast boundaries, lines of control or any other outline you want drawn under the flows.</p>
+  </aside>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- Gazetteer: name|lat|lon|aliases ---------------- */
+const GAZ = `Kyiv|50.450|30.523|kiev;київ;киев
+Kharkiv|49.994|36.230|kharkov;харків;харьков
+Odesa|46.482|30.723|odessa;одеса;одесса;odeska;одеська;одесская
+Dnipro|48.465|35.046|dnepr;dnipropetrovsk;dnepropetrovsk;дніпро;днепр;дніпропетровськ;днепропетровск
+Donetsk|48.015|37.803|донецьк;донецк
+Luhansk|48.574|39.308|lugansk;луганськ;луганск
+Zaporizhzhia|47.838|35.139|zaporizhia;zaporozhye;zaporizhzhya;zaporizka;запоріжжя;запорожье;запорізька;запорожская
+Kherson|46.636|32.617|херсон
+Mykolaiv|46.975|31.995|nikolaev;nikolayev;mykolayiv;миколаїв;николаев
+Lviv|49.839|24.030|lvov;львів;львов
+Vinnytsia|49.233|28.468|vinnitsa;vinnytsya;вінниця
+Lutsk|50.747|25.325|volyn;volhynia;volynska;луцьк
+Zhytomyr|50.254|28.658|zhitomir;житомир
+Uzhhorod|48.621|22.288|zakarpattia;zakarpatska;transcarpathia;uzhgorod;ужгород
+Ivano-Frankivsk|48.922|24.711|івано франківськ
+Kropyvnytskyi|48.508|32.262|kirovohrad;kirovograd;kirovohradska;кропивницький
+Poltava|49.588|34.551|полтава
+Rivne|50.619|26.252|rovno;рівне
+Sumy|50.908|34.798|суми
+Ternopil|49.553|25.594|тернопіль
+Khmelnytskyi|49.422|26.987|khmelnitsky;khmelnytskyy;хмельницький
+Cherkasy|49.444|32.060|cherkassy;черкаси
+Chernivtsi|48.292|25.936|chernovtsy;bukovina;чернівці
+Chernihiv|51.498|31.289|chernigov;чернігів
+Simferopol|44.952|34.102|crimea;krym;autonomous republic of crimea;сімферополь;симферополь;крим;крым
+Sevastopol|44.616|33.525|севастополь
+Yevpatoria|45.190|33.367|evpatoria;yevpatoriya;євпаторія;евпатория
+Kerch|45.357|36.468|керч;керчь
+Mariupol|47.097|37.543|маріуполь;мариуполь
+Melitopol|46.849|35.367|мелітополь;мелитополь
+Berdiansk|46.756|36.787|berdyansk;бердянськ;бердянск
+Nova Kakhovka|46.755|33.348|нова каховка;новая каховка
+Kakhovka|46.818|33.478|каховка
+Henichesk|46.171|34.816|genichesk;генічеськ
+Skadovsk|46.115|32.912|скадовськ
+Oleshky|46.625|32.718|tsiurupynsk;олешки
+Enerhodar|47.499|34.656|energodar;енергодар
+Tokmak|47.255|35.705
+Bakhmut|48.595|38.000|artemivsk;artemovsk;бахмут
+Sievierodonetsk|48.948|38.494|severodonetsk;sieverodonetsk;сєвєродонецьк
+Lysychansk|48.904|38.442|lisichansk;лисичанськ
+Rubizhne|49.012|38.380|rubezhnoe
+Starobilsk|49.276|38.910|старобільськ
+Alchevsk|48.468|38.798|алчевськ
+Horlivka|48.336|38.053|gorlovka;горлівка
+Makiivka|48.048|37.926|makeevka;макіївка
+Volnovakha|47.601|37.497|волноваха
+Kramatorsk|48.739|37.584|краматорськ
+Sloviansk|48.852|37.605|slavyansk;словʼянськ
+Izium|49.212|37.256|izyum;ізюм
+Kupiansk|49.711|37.616|kupyansk;купʼянськ
+Bucha|50.543|30.213|буча
+Irpin|50.522|30.250|ірпінь
+Moscow|55.756|37.617|moskva;москва
+Saint Petersburg|59.939|30.316|st petersburg;sankt peterburg;petersburg;санкт петербург
+Rostov-on-Don|47.236|39.714|rostov;rostov na donu;ростов на дону;ростов
+Taganrog|47.209|38.935|таганрог
+Krasnodar|45.035|38.975|kuban;краснодар
+Anapa|44.894|37.316|анапа
+Novorossiysk|44.723|37.769|novorossiisk;новороссийск
+Gelendzhik|44.561|38.077|геленджик
+Sochi|43.585|39.723|сочи
+Kursk|51.730|36.193|курск
+Belgorod|50.595|36.587|белгород
+Voronezh|51.672|39.184|воронеж
+Bryansk|53.243|34.364|брянск
+Smolensk|54.782|32.045|смоленск
+Oryol|52.970|36.064|orel;орел
+Lipetsk|52.603|39.570|липецк
+Tambov|52.721|41.452|тамбов
+Tula|54.193|37.618|тула
+Kaluga|54.513|36.261|калуга
+Ryazan|54.629|39.736|рязань
+Tver|56.858|35.917|тверь
+Yaroslavl|57.626|39.894|ярославль
+Kostroma|57.768|40.927|кострома
+Ivanovo|57.000|40.974|иваново
+Vladimir|56.129|40.407|владимир
+Vologda|59.220|39.891|вологда
+Nizhny Novgorod|56.327|44.006|nizhniy novgorod;нижний новгород
+Kazan|55.796|49.106|tatarstan;казань
+Samara|53.195|50.101|самара
+Saratov|51.533|46.034|саратов
+Penza|53.195|45.018|пенза
+Ulyanovsk|54.314|48.403|ульяновск
+Volgograd|48.708|44.513|волгоград
+Astrakhan|46.348|48.033|астрахань
+Elista|46.308|44.256|kalmykia;элиста
+Stavropol|45.044|41.969|ставрополь
+Pyatigorsk|44.049|43.060|пятигорск
+Makhachkala|42.983|47.504|dagestan;махачкала
+Grozny|43.318|45.694|chechnya;грозный
+Nalchik|43.485|43.607|kabardino balkaria;нальчик
+Vladikavkaz|43.024|44.682|north ossetia;владикавказ
+Murmansk|68.970|33.075|мурманск
+Arkhangelsk|64.539|40.516|archangel;архангельск
+Petrozavodsk|61.785|34.346|karelia;петрозаводск
+Pskov|57.819|28.332|псков
+Veliky Novgorod|58.522|31.270|novgorod;великий новгород
+Kaliningrad|54.710|20.452|калининград
+Ufa|54.735|55.958|bashkortostan;уфа
+Perm|58.010|56.230|пермь
+Orenburg|51.768|55.097|оренбург
+Yekaterinburg|56.838|60.597|ekaterinburg;sverdlovsk;екатеринбург
+Chelyabinsk|55.160|61.403|челябинск
+Tyumen|57.153|65.534|тюмень
+Kurgan|55.441|65.341|курган
+Omsk|54.989|73.369|омск
+Novosibirsk|55.008|82.935|новосибирск
+Tomsk|56.485|84.948|томск
+Barnaul|53.348|83.779|altai krai;барнаул
+Kemerovo|55.355|86.087|kuzbass;кемерово
+Krasnoyarsk|56.010|92.852|красноярск
+Irkutsk|52.287|104.305|иркутск
+Ulan-Ude|51.834|107.584|buryatia;улан удэ
+Chita|52.033|113.500|zabaykalsky;zabaikalsky;чита
+Yakutsk|62.028|129.732|yakutia;sakha;якутск
+Khabarovsk|48.480|135.072|хабаровск
+Vladivostok|43.116|131.882|primorye;primorsky;владивосток
+Magadan|59.561|150.808|магадан
+Petropavlovsk-Kamchatsky|53.024|158.643|kamchatka
+Yuzhno-Sakhalinsk|46.959|142.738|sakhalin;южно сахалинск
+Anadyr|64.734|177.514|chukotka;анадырь
+Pevek|69.700|170.313|певек
+Blagoveshchensk|50.290|127.527|amur;благовещенск
+Birobidzhan|48.795|132.921|jewish autonomous;биробиджан
+Nakhodka|42.817|132.873|находка
+Ussuriysk|43.797|131.952|ussuriisk;уссурийск
+Artyom|43.354|132.188|artem;артем
+Komsomolsk-on-Amur|50.550|137.008|komsomolsk na amure;комсомольск на амуре
+Nikolayevsk-on-Amur|53.142|140.722|nikolaevsk na amure
+Sovetskaya Gavan|48.967|140.285|sovgavan
+Korsakov|46.632|142.776|корсаков
+Kholmsk|47.047|142.042|холмск
+Okha|53.574|142.948
+Vilyuchinsk|52.931|158.405
+Yelizovo|53.183|158.388|elizovo
+Neryungri|56.659|124.725|нерюнгри
+Tynda|55.155|124.723
+Mirny|62.535|113.961|mirnyy
+Bratsk|56.152|101.634|братск
+Norilsk|69.349|88.201|норильск
+Pyongyang|39.039|125.762|north korea;dprk;korea;평양;пхеньян;pyeongyang
+Wonsan|39.153|127.443|원산;вонсан
+Hamhung|39.918|127.536|함흥;хамхын
+Chongjin|41.796|129.776|청진;чхонджин
+Sinuiju|40.100|124.398|신의주
+Nampo|38.737|125.408|남포
+Kaesong|37.971|126.554|개성
+Rason|42.257|130.300|rajin;rajin sonbong;라선;расон
+Kimchaek|40.664|129.193|김책
+Hyesan|41.402|128.178|혜산
+Kanggye|40.968|126.586|강계
+Haeju|38.040|125.714|해주
+Sariwon|38.507|125.762|사리원
+Pyongsong|39.247|125.871|평성
+Syktyvkar|61.668|50.836|komi;сыктывкар
+Kirov|58.603|49.668|киров
+Izhevsk|56.853|53.212|udmurtia;ижевск
+Cheboksary|56.146|47.251|chuvashia;чебоксары
+Saransk|54.187|45.184|mordovia;саранск
+Yoshkar-Ola|56.634|47.876|mari el
+Minsk|53.904|27.562|мінск;минск
+Gomel|52.441|30.988|homel;гомель
+Mogilev|53.894|30.331|mahilyow;могилев
+Vitebsk|55.184|30.202|viciebsk;витебск
+Brest|52.098|23.734|брест
+Grodno|53.678|23.830|hrodna;гродно`;
+
+const STOP_LATIN = /\b(oblast|obl|region|city|krai|kray|republic|of|the|ar|raion|district|municipality)\b/g;
+const STOP_CYR = /(^|\s)(область|обл|місто|город|м|г|край|республика|республіка|район)(?=\s|$)/g;
+function norm(s){
+  return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()
+    .replace(/[’'ʼ`"]/g,"").replace(/[-_.,()\/]/g," ")
+    .replace(STOP_LATIN," ").replace(STOP_CYR," ").replace(/\s+/g," ").trim();
+}
+const gazIndex = new Map();
+GAZ.split("\n").forEach(line=>{
+  const [name,lat,lon,al] = line.split("|");
+  const rec = {name, lat:+lat, lon:+lon};
+  [name].concat(al ? al.split(";") : []).forEach(a=>{ const k=norm(a); if(k && !gazIndex.has(k)) gazIndex.set(k,rec); });
+});
+function lookup(raw){
+  const n = norm(raw); if(!n) return null;
+  const tries = [n, n.replace(/a$/,""), n.replace(/ska$/,""), n.replace(/ka$/,""), n.replace(/а$/,""), n.replace(/ська$/,""), n.replace(/ская$/,""), n.replace(/кая$/,"к")];
+  for(const t of tries){ if(gazIndex.has(t)) return gazIndex.get(t); }
+  return null;
+}
+
+/* ---------------- CSV parsing (RFC 4180, delimiter sniffing) ---------------- */
+function parseCSV(text){
+  text = text.replace(/^\uFEFF/,"");
+  const first = text.split(/\r?\n/,1)[0] || "";
+  const counts = {",":0,"\t":0,";":0};
+  for(const ch of first) if(ch in counts) counts[ch]++;
+  const delim = Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+  const rows=[]; let row=[], field="", q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else q=false; }
+      else field+=c;
+    } else if(c==='"') q=true;
+    else if(c===delim){ row.push(field); field=""; }
+    else if(c==="\n"||c==="\r"){ if(c==="\r"&&text[i+1]==="\n") i++; row.push(field); rows.push(row); row=[]; field=""; }
+    else field+=c;
+  }
+  if(field!==""||row.length){ row.push(field); rows.push(row); }
+  const clean = rows.filter(r=>r.some(v=>v.trim()!==""));
+  if(!clean.length) return {fields:[],data:[]};
+  const fields = clean[0].map(h=>h.trim());
+  const data = clean.slice(1).map(r=>{ const o={}; fields.forEach((f,i)=>o[f]=(r[i]??"").trim()); return o; });
+  return {fields,data};
+}
+const ALIASES = {
+  source:["source","origin","from","sourcename","originname","fromname","sourcelocation","sourceplace","placeoforigin"],
+  destination:["destination","dest","to","destinationname","destname","toname","destinationlocation","destinationplace"],
+  count:["count","n","children","number","value","total","numberofchildren","kids","num"],
+  slat:["sourcelat","originlat","fromlat","slat","sourcelatitude","originlatitude"],
+  slon:["sourcelon","sourcelng","sourcelong","originlon","originlng","fromlon","fromlng","slon","slng","sourcelongitude","originlongitude"],
+  dlat:["destlat","destinationlat","tolat","dlat","destlatitude","destinationlatitude"],
+  dlon:["destlon","destlng","destlong","destinationlon","destinationlng","tolon","tolng","dlon","dlng","destlongitude","destinationlongitude"],
+  period:["period","date","month","year","quarter","when","time"],
+  category:["category","group","status","type","agegroup","age","verification","class"],
+  notes:["notes","note","comment","comments","description","sourcenote","source"]
+};
+const hkey = h=>h.toLowerCase().replace(/[^a-z0-9]/g,"");
+
+/* ---------------- State ---------------- */
+const S = {
+  rows:[], label:"", sample:false, periods:[], cats:[], unmatched:[],
+  cat:"__all", pFrom:0, pTo:0, min:1, mask:0, note:"", allLabels:false, focus:null,
+  base:null, userLayer:null, view:null, colors:{}
+};
+const store = {
+  get(k){ try{ return localStorage.getItem("flowmap:"+k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem("flowmap:"+k,v); }catch(e){} },
+  del(k){ try{ localStorage.removeItem("flowmap:"+k); }catch(e){} }
+};
+const fmt = d3.format(",");
+const showCount = c => (S.mask>0 && c<S.mask) ? `fewer than ${fmt(S.mask)}` : fmt(c);
+const $ = s=>document.querySelector(s);
+
+/* ---------------- Ingest ---------------- */
+function ingest(text, label, sample){
+  $("#err").textContent = "";
+  const {fields,data} = parseCSV(text);
+  const pick = list => fields.find(f=>list.includes(hkey(f)));
+  const col = {}; for(const k in ALIASES) col[k]=pick(ALIASES[k]);
+  if(!col.source||!col.destination||!col.count){
+    const missing = ["source","destination","count"].filter(k=>!col[k]).join(", ");
+    $("#err").textContent = `Couldn't find a ${missing} column. Columns found: ${fields.join(", ")||"none"}. Rename them or see Expected columns below.`;
+    return false;
+  }
+  const rows=[], miss=new Map(); let skipped=0;
+  const place = (raw, lat, lon) => {
+    const la=parseFloat(lat), lo=parseFloat(lon);
+    if(isFinite(la)&&isFinite(lo)&&Math.abs(la)<=90&&Math.abs(lo)<=180) return {key:norm(raw)||raw, name:raw, lat:la, lon:lo};
+    const g = lookup(raw); return g ? {key:norm(g.name), name:g.name, lat:g.lat, lon:g.lon} : null;
+  };
+  for(const r of data){
+    const s=(r[col.source]||"").trim(), d=(r[col.destination]||"").trim();
+    const c=parseFloat(String(r[col.count]||"").replace(/[^0-9.\-]/g,""));
+    if(!s||!d||!isFinite(c)||c<=0){ skipped++; continue; }
+    const sp=place(s, col.slat&&r[col.slat], col.slon&&r[col.slon]);
+    const dp=place(d, col.dlat&&r[col.dlat], col.dlon&&r[col.dlon]);
+    if(!sp) miss.set(s,(miss.get(s)||0)+c);
+    if(!dp) miss.set(d,(miss.get(d)||0)+c);
+    if(!sp||!dp){ skipped++; continue; }
+    if(sp.key===dp.key){ skipped++; continue; }
+    rows.push({s:sp, d:dp, c, p:col.period?(r[col.period]||"").trim():"", k:col.category?(r[col.category]||"").trim():"", n:col.notes?(r[col.notes]||"").trim():""});
+  }
+  if(!rows.length && !miss.size){
+    $("#err").textContent = "No usable rows. Check that the count column holds numbers above zero.";
+    return false;
+  }
+  S.rows=rows; S.label=label; S.sample=sample; S.skipped=skipped;
+  S.unmatched=[...miss.entries()].sort((a,b)=>b[1]-a[1]);
+  S.periods=[...new Set(rows.map(r=>r.p).filter(Boolean))].sort();
+  S.cats=[...new Set(rows.map(r=>r.k).filter(Boolean))].sort();
+  S.cat="__all"; S.pFrom=0; S.pTo=Math.max(0,S.periods.length-1); S.min=1; S.focus=null; $("#chip").hidden=true;
+  store.set("csv",text); store.set("label",label); store.set("sample",sample?"1":"");
+  setupControls(); fitView(); render();
+  return true;
+}
+
+function setupControls(){
+  const has = S.rows.length>0;
+  $("#filters").hidden=!has; $("#totals").hidden=!has; $("#empty").hidden=has||S.unmatched.length>0;
+  $("#legend").hidden=!has; $("#banner").hidden=!S.sample;
+  const skippedTxt = S.skipped ? `, ${fmt(S.skipped)} skipped` : "";
+  $("#status").textContent = has ? `${S.label}: ${fmt(S.rows.length)} rows drawn${skippedTxt}` : (S.unmatched.length?`${S.label}: no rows could be placed`:"No data loaded");
+  $("#catWrap").hidden = S.cats.length===0;
+  $("#cat").innerHTML = `<option value="__all">All categories</option>` + S.cats.map(c=>`<option>${esc(c)}</option>`).join("");
+  $("#perWrap").hidden = S.periods.length<2;
+  const opts = S.periods.map((p,i)=>`<option value="${i}">${esc(p)}</option>`).join("");
+  $("#pFrom").innerHTML=opts; $("#pTo").innerHTML=opts; $("#pFrom").value=S.pFrom; $("#pTo").value=S.pTo;
+  const um=$("#unmatched");
+  if(S.unmatched.length){
+    const shown=S.unmatched.slice(0,12);
+    um.innerHTML = `<div class="warnbox"><b>${S.unmatched.length} place name${S.unmatched.length>1?"s":""} not recognised.</b> Rows using them are left off the map. Add source_lat/source_lon or dest_lat/dest_lon for these rows, or use a standard spelling.<ul>${shown.map(([n,c])=>`<li>${esc(n)} (${fmt(c)} children)</li>`).join("")}</ul>${S.unmatched.length>12?`<div>and ${S.unmatched.length-12} more</div>`:""}</div>`;
+  } else um.innerHTML="";
+}
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------------- Aggregation ---------------- */
+function compute(){
+  const lo=Math.min(S.pFrom,S.pTo), hi=Math.max(S.pFrom,S.pTo);
+  const inRange = p => !S.periods.length || !p || (S.periods.indexOf(p)>=lo && S.periods.indexOf(p)<=hi);
+  const flows=new Map();
+  for(const r of S.rows){
+    if(S.cat!=="__all" && r.k!==S.cat) continue;
+    if(S.periods.length>1 && !inRange(r.p)) continue;
+    const id=r.s.key+"→"+r.d.key;
+    const f=flows.get(id)||{id, s:r.s, d:r.d, c:0, notes:new Set()}; f.c+=r.c; if(r.n) f.notes.add(r.n); flows.set(id,f);
+  }
+  const all=[...flows.values()];
+  const maxAll=d3.max(all,f=>f.c)||1;
+  const list=all.filter(f=>f.c>=S.min).sort((a,b)=>b.c-a.c);
+  const nodes=new Map();
+  const node=p=>{ if(!nodes.has(p.key)) nodes.set(p.key,{key:p.key,name:p.name,lat:p.lat,lon:p.lon,out:0,in:0}); return nodes.get(p.key); };
+  list.forEach(f=>{ node(f.s).out+=f.c; node(f.d).in+=f.c; });
+  // Onward transfers (routes out of a place that also receives children) are part of the total, not added to it
+  const origins=[...nodes.values()].filter(n=>n.out&&!n.in);
+  const total = origins.length ? d3.sum(list.filter(f=>!nodes.get(f.s.key).in),f=>f.c) : d3.sum(list,f=>f.c);
+  const transit=[...nodes.values()].filter(n=>n.out&&n.in);
+  return {flows:list, nodes:[...nodes.values()], total, maxAll, transit};
+}
+
+/* ---------------- Basemap ---------------- */
+// Schematic fallback outlines (approximate, for orientation only). Internationally recognised borders, Crimea included.
+const UA_MAIN=[[29.7,45.2],[29.95,45.65],[30.25,46.05],[30.75,46.45],[31.15,46.6],[31.55,46.55],[31.9,46.35],[32.5,46.1],[33.2,46.12],[33.6,46.15],[33.85,46.2],[34.4,46.2],[34.8,46.17],[35.4,46.37],[36.2,46.65],[36.8,46.75],[37.55,47.07],[38.2,47.1],[38.3,47.55],[38.85,47.85],[39.8,47.85],[40.05,48.25],[39.8,48.6],[40.1,49.05],[40.2,49.55],[39.6,49.8],[38.9,49.95],[38.2,50.05],[37.6,50.3],[36.6,50.25],[35.9,50.45],[35.4,50.6],[35.35,51.05],[34.25,51.25],[34.4,51.7],[33.8,52.35],[33.2,52.35],[32.3,52.3],[31.78,52.1],[30.95,52.05],[30.55,51.25],[30.2,51.5],[29.3,51.4],[28.7,51.45],[28.0,51.6],[26.8,51.8],[25.5,51.92],[24.4,51.9],[23.6,51.6],[24.1,50.85],[24.0,50.4],[23.5,50.3],[22.7,49.6],[22.6,49.1],[22.15,48.4],[22.6,48.1],[23.15,48.1],[24.6,47.95],[25.1,47.75],[26.15,47.98],[26.6,48.25],[27.75,48.45],[28.4,48.2],[29.2,47.95],[29.6,47.3],[29.95,46.8],[30.1,46.4],[29.6,46.4],[28.95,46.0],[28.25,45.5],[28.85,45.35],[29.7,45.2]];
+const UA_CRIMEA=[[33.6,46.15],[33.0,45.85],[32.6,45.6],[32.48,45.35],[32.9,45.3],[33.37,45.2],[33.6,44.95],[33.5,44.6],[33.75,44.4],[34.17,44.5],[34.4,44.67],[35.0,44.85],[35.4,45.05],[35.9,45.0],[36.45,45.15],[36.6,45.35],[36.4,45.45],[35.9,45.45],[35.4,45.3],[35.0,45.6],[34.6,45.95],[34.1,46.1],[33.85,46.2],[33.6,46.15]];
+const BLACK_SEA=[[29.7,45.2],[29.95,45.65],[30.25,46.05],[30.75,46.45],[31.15,46.6],[31.55,46.55],[31.9,46.35],[32.5,46.1],[33.2,46.12],[33.6,46.15],[33.0,45.85],[32.6,45.6],[32.48,45.35],[32.9,45.3],[33.37,45.2],[33.6,44.95],[33.5,44.6],[33.75,44.4],[34.17,44.5],[34.4,44.67],[35.0,44.85],[35.4,45.05],[35.9,45.0],[36.45,45.15],[36.6,45.3],[36.7,45.1],[37.3,44.9],[37.8,44.7],[38.6,44.3],[39.7,43.6],[41.0,43.0],[41.65,42.15],[41.6,41.6],[39.7,41.0],[37.5,41.1],[36.3,41.3],[35.5,41.7],[35.15,42.03],[33.3,42.0],[31.8,41.45],[30.3,41.2],[29.1,41.2],[28.3,41.5],[28.0,41.95],[27.5,42.5],[27.95,43.2],[28.5,43.4],[28.65,44.17],[29.1,44.8],[29.7,45.2]];
+const AZOV=[[34.8,46.17],[35.0,45.6],[35.4,45.3],[35.9,45.45],[36.4,45.45],[36.6,45.38],[36.9,45.35],[37.3,45.35],[38.0,45.9],[38.17,46.05],[38.27,46.7],[38.9,47.15],[39.2,47.25],[38.2,47.1],[37.55,47.07],[36.8,46.75],[36.2,46.65],[35.4,46.37],[34.8,46.17]];
+const CASPIAN=[[46.7,44.5],[47.5,43.0],[48.6,41.8],[49.5,40.2],[49.2,39.1],[48.9,38.4],[49.9,37.4],[51.6,36.8],[53.9,37.0],[53.9,38.9],[53.2,39.8],[52.8,41.3],[53.0,42.1],[51.4,43.1],[51.0,44.5],[50.3,44.6],[51.3,45.3],[53.0,45.3],[53.0,46.8],[51.9,47.1],[50.0,46.7],[48.6,46.3],[47.6,45.6],[46.7,44.5]];
+const NK=[[124.35,40.0],[125.0,40.45],[126.0,41.0],[126.8,41.7],[127.5,41.45],[128.15,41.4],[128.3,42.0],[129.1,42.25],[129.7,42.45],[130.25,42.9],[130.6,42.42],[130.0,41.95],[129.8,41.8],[129.6,41.0],[129.2,40.65],[128.6,40.2],[127.9,39.85],[127.5,39.6],[127.5,39.15],[127.9,38.9],[128.35,38.6],[127.1,38.3],[126.7,37.95],[126.1,37.75],[125.6,37.75],[124.75,38.1],[125.2,38.6],[125.35,38.7],[125.1,39.1],[124.7,39.6],[124.35,40.0]];
+const EAST_SEAS=[[124.35,40.0],[124.7,39.6],[125.1,39.1],[125.35,38.7],[125.2,38.6],[124.75,38.1],[125.6,37.75],[126.1,37.75],[126.6,37.4],[126.3,36.5],[126.5,34.5],[127.5,34.6],[129.0,35.1],[129.4,36.0],[129.4,37.0],[128.35,38.6],[127.9,38.9],[127.5,39.15],[127.5,39.6],[127.9,39.85],[128.6,40.2],[129.2,40.65],[129.6,41.0],[129.8,41.8],[130.0,41.95],[130.6,42.42],[131.9,43.1],[132.9,42.8],[135.1,43.6],[136.9,45.0],[138.5,47.0],[140.3,48.9],[140.5,51.0],[141.3,52.3],[141.3,53.3],[139.0,54.1],[137.2,54.6],[138.5,56.4],[140.5,57.8],[143.3,59.4],[146.5,59.4],[148.5,59.3],[150.8,59.5],[154.0,59.2],[156.5,61.5],[160.0,61.9],[157.5,58.5],[156.5,57.6],[155.6,55.4],[155.6,53.5],[156.7,51.0],[158.0,52.5],[160.0,54.3],[162.1,56.2],[163.3,57.8],[165.0,60.0],[170.0,60.0],[174.0,62.0],[177.5,62.5],[181.0,62.9],[182.0,64.5],[184.0,65.0],[190.3,66.0],[192.5,64.5],[194.5,60.0],[198,55],[200,40],[180,30],[160,28],[140,28],[128,27],[121.5,28.5],[122,30.8],[120.8,32.8],[119.3,35.0],[122.5,37.4],[121.2,38.8],[122.5,39.5],[123.5,39.8],[124.35,40.0]];
+const ARCTIC=[[20,70.5],[28,71],[33,69.4],[41,67.8],[44,68.5],[53,68.5],[60,69.8],[66,69.5],[70.5,73.4],[80,73.5],[87,73.9],[94,76],[104,77.7],[113,73.7],[120,73.0],[129,73.2],[140,72.5],[151,71.4],[160,69.7],[170,70.0],[178,69.4],[184,67.6],[188,66.9],[190.3,66.0],[195,67],[200,72],[200,86],[150,86],[100,86],[60,86],[20,86],[20,70.5]];
+const JAPAN=[[[140.0,41.4],[141.2,41.8],[143.3,42.0],[145.8,43.3],[145.3,44.3],[141.9,45.5],[141.6,44.3],[141.4,43.2],[140.3,42.9],[140.0,41.4]],
+ [[141.4,41.4],[142.05,39.5],[141.0,38.3],[140.9,36.9],[140.9,35.7],[139.8,35.0],[138.8,34.6],[137.0,34.6],[135.8,33.5],[135.0,34.6],[132.4,34.3],[130.9,34.0],[133.0,35.6],[135.8,35.5],[136.8,37.3],[137.4,37.0],[138.6,37.9],[139.8,39.9],[140.0,40.8],[141.4,41.4]],
+ [[130.9,33.9],[131.9,33.3],[131.4,31.4],[130.6,31.0],[130.2,31.4],[129.8,32.7],[129.6,33.4],[130.9,33.9]],
+ [[142.0,46.0],[143.5,46.6],[143.1,49.3],[143.0,51.5],[143.2,53.5],[142.7,54.4],[142.2,52.9],[141.7,51.5],[142.2,48.0],[141.9,46.6],[142.0,46.0]]];
+function rewindPolygon(rings){
+  return rings.map((r,i)=>{ const t={type:"Polygon",coordinates:[r]}; const big=d3.geoArea(t)>2*Math.PI; return big ? r.slice().reverse() : r; });
+}
+function rewindFeature(g){
+  if(!g) return g;
+  if(g.type==="FeatureCollection") return {...g, features:g.features.map(rewindFeature)};
+  if(g.type==="Feature") return {...g, geometry:rewindFeature(g.geometry)};
+  if(g.type==="Polygon") return {...g, coordinates:rewindPolygon(g.coordinates)};
+  if(g.type==="MultiPolygon") return {...g, coordinates:g.coordinates.map(rewindPolygon)};
+  if(g.type==="GeometryCollection") return {...g, geometries:g.geometries.map(rewindFeature)};
+  return g;
+}
+const poly = c=>rewindFeature({type:"Polygon",coordinates:[c]});
+function schematicBase(){
+  return { mode:"schematic",
+    ukraine: rewindFeature({type:"MultiPolygon",coordinates:[[UA_MAIN],[UA_CRIMEA]]}),
+    seas:[poly(BLACK_SEA),poly(AZOV),poly(CASPIAN),poly(EAST_SEAS),poly(ARCTIC)],
+    islands: JAPAN.map(poly),
+    borders: rewindFeature({type:"Polygon",coordinates:[NK]}) };
+}
+const ATLAS_URL="https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json/+esm";
+async function loadAtlas(){
+  try{
+    if(typeof topojson==="undefined") throw new Error("topojson unavailable");
+    const mod = await Promise.race([import(ATLAS_URL), new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),10000))]);
+    const topo = mod.default||mod;
+    if(!topo||!topo.objects||!topo.objects.countries) throw new Error("bad atlas");
+    const geoms = topo.objects.countries.geometries;
+    const ua = geoms.find(g=>String(g.id)==="804"), ru = geoms.find(g=>String(g.id)==="643");
+    // Draw Crimea as part of Ukraine (internationally recognised borders), whichever way the source codes it.
+    if(ua && ru && ru.type==="MultiPolygon"){
+      const keep=[], move=[];
+      for(const p of ru.arcs){
+        const [lo,la]=d3.geoCentroid(topojson.feature(topo,{type:"Polygon",arcs:p}));
+        (lo>32.2&&lo<36.9&&la>44.2&&la<46.4 ? move : keep).push(p);
+      }
+      if(move.length){ ru.arcs=keep; if(ua.type==="Polygon"){ ua.type="MultiPolygon"; ua.arcs=[ua.arcs]; } ua.arcs.push(...move); }
+    }
+    S.base = { mode:"atlas",
+      land: topojson.merge(topo, geoms),
+      ukraine: ua ? topojson.feature(topo, ua) : schematicBase().ukraine,
+      borders: topojson.mesh(topo, topo.objects.countries, (a,b)=>a!==b) };
+    $("#baseStatus").textContent = "Country boundaries from Natural Earth (via world-atlas). Ukraine is drawn with its internationally recognised borders, including Crimea.";
+  }catch(e){
+    S.base = schematicBase();
+    $("#baseStatus").textContent = "Showing a simplified outline because detailed boundaries couldn't load. Coastlines and borders are approximate; add a GeoJSON layer for precise lines.";
+  }
+  fitView(); drawBase(); render();
+}
+
+const GEO_LABELS=[["Ukraine",31.3,49.0,0],["Russia",42.5,54.2,0],["Belarus",27.9,53.35,0],["Poland",19.6,52.2,0],["Moldova",28.6,47.3,0],["Romania",24.8,45.9,0],["Black Sea",33.8,43.2,1],["Sea of Azov",36.9,46.25,1],["Caspian Sea",50.6,42.0,1],["Kazakhstan",67,48.3,0],["Turkey",33.5,39.3,0],["Lithuania",24,55.4,0],["Latvia",25.5,56.8,0],["Estonia",25.8,58.7,0],["Finland",26.5,62.5,0],["Georgia",43.5,42.2,0],["North Korea",126.9,40.3,0],["South Korea",128.0,36.4,0],["China",112,36,0],["Mongolia",103,47,0],["Japan",138.6,36.6,0],["Sea of Japan",134.5,40.5,1],["Sea of Okhotsk",148.5,54.5,1],["Bering Sea",180,58,1],["Pacific Ocean",160,42,1],["Arctic Ocean",100,80,1]];
+
+/* ---------------- Map rendering ---------------- */
+const mapEl=$("#map");
+const svg=d3.select("#svg");
+const defs=svg.append("defs");
+const gradMain=defs.append("g"), gradInset=defs.append("g");
+const clipRect=defs.append("clipPath").attr("id","insetClip").append("rect");
+const bg=svg.append("rect").attr("x",0).attr("y",0);
+const gBase=svg.append("g");
+const gGeoLbl=svg.append("g");
+const gLocator=svg.append("g");
+const gFlows=svg.append("g");
+const gNodes=svg.append("g");
+const gFac=svg.append("g");
+const gLabels=svg.append("g");
+// Ukraine detail inset (static, not affected by zoom)
+const gInset=svg.append("g").attr("class","inset");
+const insetBg=gInset.append("rect");
+const gIClip=gInset.append("g").attr("clip-path","url(#insetClip)");
+const gIBase=gIClip.append("g"), gIGeo=gIClip.append("g"), gIFlows=gIClip.append("g"), gINodes=gIClip.append("g"), gIFac=gIClip.append("g"), gILabels=gIClip.append("g");
+const insetFrame=gInset.append("rect").attr("fill","none").attr("class","inset-frame");
+const insetTitle=gInset.append("text").attr("class","inset-title").text("Ukraine and nearby, enlarged");
+gInset.on("wheel",e=>e.stopPropagation()).on("mousedown touchstart pointerdown",e=>e.stopPropagation());
+
+let projection=null, pInset=null, insetBox=null, W=0, H=0, T=d3.zoomIdentity;
+const INSET_REGION=[[21.6,44.1],[40.6,52.6]];
+const inRegion=n=>n.lon>=INSET_REGION[0][0]&&n.lon<=INSET_REGION[1][0]&&n.lat>=INSET_REGION[0][1]&&n.lat<=INSET_REGION[1][1];
+
+const zoom=d3.zoom().scaleExtent([0.6,14]).on("zoom",e=>{
+  T=e.transform; gBase.attr("transform",T);
+  if(!rafPending){ rafPending=true; requestAnimationFrame(()=>{ rafPending=false; renderOverlay(); }); }
+});
+let rafPending=false;
+svg.call(zoom).on("dblclick.zoom",null);
+
+function readColors(){
+  const cs=getComputedStyle(document.documentElement);
+  S.colors={src:cs.getPropertyValue("--src").trim(), dst:cs.getPropertyValue("--dst").trim()};
+}
+const EXTENTS={
+  pacific:[[22.1,44.3],[40.3,52.4],[124.2,37.6],[131,42],[160,51],[190,65.5],[178,69.5],[60,68]],
+  europe:[[22.1,44.3],[40.3,52.4],[56,58],[33,69]],
+  data:[[22.1,44.3],[40.3,52.4]]
+};
+function fitView(){
+  mapEl.classList.toggle("has-inset",!!S.inset);
+  const r=mapEl.getBoundingClientRect(); W=Math.max(200,r.width); H=Math.max(200,r.height);
+  svg.attr("viewBox",`0 0 ${W} ${H}`); bg.attr("width",W).attr("height",H);
+  const pts=(EXTENTS[S.extent]||EXTENTS.pacific).map(p=>p.slice());
+  S.rows.forEach(r=>{ pts.push([r.s.lon,r.s.lat],[r.d.lon,r.d.lat]); });
+  // Treat the far side of the antimeridian (Chukotka, Bering Sea) as east of Russia, not west of Europe
+  pts.forEach(p=>{ if(p[0]<-60) p[0]+=360; });
+  const lons=pts.map(p=>p[0]); const cx=(d3.min(lons)+d3.max(lons))/2;
+  const narrow=W<600, pad=narrow?24:48;
+  const mainBottom = S.inset ? (narrow ? H*0.40 : H*0.52) : H-(narrow?100:120);
+  projection=d3.geoMercator().rotate([-cx,0]).precision(0.3)
+    .fitExtent([[pad,pad+34],[W-pad-40,mainBottom]],{type:"MultiPoint",coordinates:pts});
+  projection.clipExtent([[-W*1.5,-H*1.5],[W*2.5,H*2.5]]);
+  zoom.translateExtent([[-W,-H],[W*2,H*2]]);
+  insetBox=null; pInset=null;
+  if(S.inset){
+    const contentBottom=d3.max(pts,p=>projection(p)[1]);
+    const legend=$("#legend"), lw=270, lh=legend.offsetHeight||100;
+    const y0=Math.min(Math.max(contentBottom+30, H*0.34), H-200);
+    let x1, y1;
+    if(narrow){ x1=W-12; y1=H-12-lh-10; } else { x1=Math.min(W-12-lw-20, Math.max(340, W*0.64)); y1=H-12; }
+    insetBox={x0:12,y0,x1,y1};
+    const ipts=[...INSET_REGION];
+    S.rows.forEach(r=>{ if(r.s.lon>15&&r.s.lon<45&&r.s.lat>40&&r.s.lat<56) ipts.push([r.s.lon,r.s.lat]); });
+    pInset=d3.geoMercator().fitExtent([[insetBox.x0+14,insetBox.y0+30],[insetBox.x1-14,insetBox.y1-14]],{type:"MultiPoint",coordinates:ipts});
+  }
+  gInset.attr("display",insetBox?null:"none");
+  if(insetBox){
+    const b=insetBox, w=b.x1-b.x0, h=b.y1-b.y0;
+    [insetBg,clipRect,insetFrame].forEach(r=>r.attr("x",b.x0).attr("y",b.y0).attr("width",w).attr("height",h).attr("rx",6));
+    insetTitle.attr("x",b.x0+12).attr("y",b.y0+20);
+  }
+  T=d3.zoomIdentity; svg.call(zoom.transform,T);
+  drawBase();
+}
+function drawBaseInto(g,proj,bgRect){
+  g.selectAll("*").remove();
+  const path=d3.geoPath(proj);
+  if(S.base.mode==="atlas"){
+    bgRect.attr("fill","var(--water)");
+    g.append("path").datum(d3.geoGraticule10()).attr("class","grat").attr("d",path);
+    g.append("path").datum(S.base.land).attr("class","land").attr("d",path);
+  } else {
+    bgRect.attr("fill","var(--land)");
+    g.append("path").datum(d3.geoGraticule10()).attr("class","grat").attr("d",path);
+    S.base.seas.forEach(s=>g.append("path").datum(s).attr("class","sea").attr("d",path));
+    (S.base.islands||[]).forEach(s=>g.append("path").datum(s).attr("class","land").attr("d",path));
+  }
+  g.append("path").datum(S.base.ukraine).attr("class","ua").attr("d",path);
+  if(S.base.borders) g.append("path").datum(S.base.borders).attr("class","borders").attr("d",path);
+  if(S.userLayer) g.append("path").datum(S.userLayer).attr("class","user-layer").attr("d",path);
+}
+function drawBase(){
+  if(!projection||!S.base) return;
+  drawBaseInto(gBase,projection,bg); gBase.attr("transform",T);
+  if(pInset) drawBaseInto(gIBase,pInset,insetBg); else gIBase.selectAll("*").remove();
+}
+
+function taper(p0,p1,w,straight){
+  const dx=p1[0]-p0[0], dy=p1[1]-p0[1], len=Math.hypot(dx,dy)||1;
+  const bend=straight?0:Math.min(len*0.2, 140);
+  const c=[(p0[0]+p1[0])/2 + dy/len*bend, (p0[1]+p1[1])/2 - dx/len*bend];
+  const N=28, L=[], R=[];
+  for(let i=0;i<=N;i++){
+    const t=i/N, u=1-t;
+    const x=u*u*p0[0]+2*u*t*c[0]+t*t*p1[0], y=u*u*p0[1]+2*u*t*c[1]+t*t*p1[1];
+    let tx=2*u*(c[0]-p0[0])+2*t*(p1[0]-c[0]), ty=2*u*(c[1]-p0[1])+2*t*(p1[1]-c[1]);
+    const tl=Math.hypot(tx,ty)||1; tx/=tl; ty/=tl;
+    const hw=Math.max(0.45,(w/2)*(1-0.82*t));
+    L.push([x-ty*hw,y+tx*hw]); R.push([x+ty*hw,y-tx*hw]);
+  }
+  const pts=L.concat(R.reverse());
+  return "M"+pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join("L")+"Z";
+}
+
+let current={flows:[],nodes:[],total:0,maxAll:1};
+function render(){
+  readColors();
+  current = S.rows.length ? compute() : {flows:[],nodes:[],total:0,maxAll:1};
+  renderOverlay(); renderPanel(); renderLegend();
+  // On phones the inset sits above the legend, so refit if the legend changed height
+  const lh=$("#legend").offsetHeight;
+  if(S.inset && W<600 && Math.abs(lh-(S._lh||0))>4){ S._lh=lh; fitView(); renderOverlay(); }
+}
+function scales(){
+  return { w:d3.scaleSqrt().domain([0,current.maxAll]).range([0, W<600?14:20]),
+           r:d3.scaleSqrt().domain([0,d3.max(current.nodes,n=>Math.max(n.out,n.in))||1]).range([0, W<600?14:20]) };
+}
+const flowTip=f=>{
+  const onward=current.nodes.find(n=>n.key===f.s.key&&n.in>0);
+  let h=`<b>${esc(f.s.name)} to ${esc(f.d.name)}</b><br>${showCount(f.c)} children`;
+  if(onward) h+=`<div class="m">Onward transfer, part of the children taken to ${esc(f.s.name)}</div>`;
+  else if(current.total) h+=`<div class="m">${pct(f.c)} of all children in view</div>`;
+  if(f.notes&&f.notes.size) h+=`<div class="m" style="margin-top:4px">${[...f.notes].map(esc).join("<br>")}</div>`;
+  return h; };
+
+// Draw flows, nodes and labels for one view (main map or inset)
+function drawLayer(L){
+  const {P,grad,prefix,gF,gN,gL,gFc,facOk,box,rf,labelOk,maxLabels}=L;
+  const sc=scales(); const {src,dst}=S.colors;
+  const F=S.focus, touches=f=>!F||f.s.key===F||f.d.key===F;
+  const drawn=current.flows.slice().reverse();
+  grad.selectAll("linearGradient").data(drawn,f=>f.id).join(
+    en=>{ const g=en.append("linearGradient").attr("gradientUnits","userSpaceOnUse");
+      g.append("stop").attr("offset","0%"); g.append("stop").attr("offset","100%"); return g; })
+    .attr("id",(f,i)=>prefix+i)
+    .each(function(f){ const a=P(f.s.lon,f.s.lat), b=P(f.d.lon,f.d.lat);
+      d3.select(this).attr("x1",a[0]).attr("y1",a[1]).attr("x2",b[0]).attr("y2",b[1]);
+      const st=d3.select(this).selectAll("stop"); st.filter((d,i)=>i===0).attr("stop-color",src); st.filter((d,i)=>i===1).attr("stop-color",dst); });
+  gF.selectAll("path").data(drawn,f=>f.id).join("path")
+    .attr("class","flow")
+    .attr("d",f=>taper(P(f.s.lon,f.s.lat),P(f.d.lon,f.d.lat),Math.max(1.2,sc.w(f.c))))
+    .attr("fill",(f,i)=>`url(#${prefix}${i})`).attr("stroke","transparent").attr("stroke-width",6)
+    .attr("opacity",f=>touches(f)?0.82:0.06)
+    .on("pointerenter pointermove",(e,f)=>showTip(e,flowTip(f)))
+    .on("pointerleave",hideTip)
+    .on("click",(e,f)=>{ e.stopPropagation(); showTip(e,flowTip(f)); });
+  const connected=new Set(); if(F){ current.flows.forEach(f=>{ if(touches(f)){ connected.add(f.s.key); connected.add(f.d.key);} }); }
+  const nodes=current.nodes.slice().sort((a,b)=>(b.out+b.in)-(a.out+a.in));
+  const R=n=>({o:n.out?Math.max(3,sc.r(n.out)*rf):0, i:n.in?Math.max(3.5,sc.r(n.in)*rf):0});
+  const ng=gN.selectAll("g.node").data(nodes,n=>n.key).join(en=>{ const g=en.append("g").attr("class","node"); g.append("circle").attr("class","n-in"); g.append("circle").attr("class","n-out"); return g; })
+    .attr("transform",n=>{ const p=P(n.lon,n.lat); return `translate(${p[0]},${p[1]})`; })
+    .attr("opacity",n=>!F||connected.has(n.key)?1:0.15)
+    .attr("tabindex",0).attr("role","button").attr("aria-label",n=>`${n.name}: ${showCount(n.out)} from here, ${showCount(n.in)} to here`)
+    .on("pointerenter pointermove",(e,n)=>showTip(e,nodeTip(n))).on("pointerleave",hideTip)
+    .on("click",(e,n)=>{ e.stopPropagation(); setFocus(S.focus===n.key?null:n.key); })
+    .on("keydown",(e,n)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); setFocus(S.focus===n.key?null:n.key);} });
+  ng.select(".n-in").attr("r",n=>R(n).i);
+  ng.select(".n-out").attr("r",n=>R(n).o);
+  // Labels, placed greedily from the largest place down so they don't pile on top of each other
+  const inBox=p=>p[0]>=box.x0+4&&p[0]<=box.x1-4&&p[1]>=box.y0+4&&p[1]<=box.y1-4;
+  const placed=[], lab=[];
+  // Facility bars: one per place, split by type, drawn under each place's circle
+  const facData=[];
+  if(gFc && S.showFac && S.fac.places.length){
+    const maxT=d3.max(S.fac.places,pl=>pl.total)||1, k=(W<600?90:150)/maxT;
+    for(const pl of S.fac.places){
+      if(!facOk(pl)) continue;
+      const p=P(pl.lon,pl.lat); if(!inBox(p)) continue;
+      const node=current.nodes.find(n=>Math.abs(n.lat-pl.lat)<0.01&&Math.abs(n.lon-pl.lon)<0.01);
+      const r=node?Math.max(R(node).o,R(node).i,3):4;
+      const segs=[]; let x=0; pl.types.forEach(t=>{ const w=Math.max(2,t.count*k); segs.push({t,x,w}); x+=w+0.8; });
+      const label=`${fmt(pl.total)} ${pl.total===1?"facility":"facilities"}`;
+      const width=Math.max(x,label.length*6.3);
+      // Try below, above, then to the side; avoid other places' circles and bars already placed
+      const others=current.nodes.filter(n=>n!==node).map(n=>{ const q=P(n.lon,n.lat), rr=Math.max(R(n).o,R(n).i,3)+2; return {x0:q[0]-rr,x1:q[0]+rr,y0:q[1]-rr,y1:q[1]+rr}; });
+      const hit=b=>placed.concat(others).some(q=>b.x0<q.x1&&b.x1>q.x0&&b.y0<q.y1&&b.y1>q.y0);
+      const clampX=x=>Math.min(Math.max(x,box.x0+6),box.x1-6-width);
+      const cands=[[clampX(p[0]-8),p[1]+r+15],[clampX(p[0]-8),p[1]-r-20],[clampX(p[0]+r+8),p[1]+4],[clampX(p[0]-r-8-width),p[1]+4]];
+      let gx=cands[0][0], gy=cands[0][1];
+      for(const [cx,cy] of cands){ const bb={x0:cx-2,x1:cx+width+2,y0:cy-11,y1:cy+14}; if(cy+14<=box.y1-4&&cy-11>=box.y0+4&&!hit(bb)){ gx=cx; gy=cy; break; } }
+      placed.push({x0:gx-2,x1:gx+width+2,y0:gy-11,y1:gy+14});
+      facData.push({pl,p,gx,gy,segs,label,mark:!node});
+    }
+  }
+  if(gFc){
+    const fg=gFc.selectAll("g.fac").data(facData,d=>d.pl.key).join(en=>{ const g=en.append("g").attr("class","fac");
+        g.append("rect").attr("class","fac-mark").attr("width",7).attr("height",7); g.append("text").attr("class","fac-label"); g.append("g").attr("class","segs"); return g; })
+      .on("pointerenter pointermove",(e,d)=>showTip(e,facTip(d.pl))).on("pointerleave",hideTip)
+      .on("click",(e,d)=>{ e.stopPropagation(); showTip(e,facTip(d.pl)); });
+    fg.select(".fac-mark").attr("display",d=>d.mark?null:"none").attr("x",d=>d.p[0]-3.5).attr("y",d=>d.p[1]-3.5);
+    fg.select(".fac-label").attr("x",d=>d.gx).attr("y",d=>d.gy).text(d=>d.label);
+    fg.select("g.segs").each(function(d){ d3.select(this).selectAll("rect").data(d.segs).join("rect").attr("class","seg")
+      .attr("x",s=>d.gx+s.x).attr("y",d.gy+3).attr("width",s=>s.w).attr("height",9).attr("fill",s=>s.t.color); });
+  }
+  const overlaps=r=>placed.some(q=>r.x0<q.x1&&r.x1>q.x0&&r.y0<q.y1&&r.y1>q.y0);
+  let count=0;
+  for(const n of nodes){
+    const p=P(n.lon,n.lat); if(!inBox(p)) continue;
+    const must=n.key===F, wanted=S.allLabels||must||(F?connected.has(n.key):count<maxLabels);
+    if(!wanted||!labelOk(n)&&!must) continue;
+    const rr=Math.max(R(n).o,R(n).i,3)+4, tw=n.name.length*6.4+4;
+    let left=p[0]+rr+tw>box.x1-4;
+    let rect=left?{x0:p[0]-rr-tw,x1:p[0]-rr,y0:p[1]-9,y1:p[1]+5}:{x0:p[0]+rr,x1:p[0]+rr+tw,y0:p[1]-9,y1:p[1]+5};
+    if(overlaps(rect)){ left=!left; rect=left?{x0:p[0]-rr-tw,x1:p[0]-rr,y0:p[1]-9,y1:p[1]+5}:{x0:p[0]+rr,x1:p[0]+rr+tw,y0:p[1]-9,y1:p[1]+5};
+      if(overlaps(rect) && !must && !S.allLabels) continue; }
+    if((rect.x0<box.x0+2||rect.x1>box.x1-2) && !must) continue;
+    placed.push(rect); count++;
+    lab.push({n,x:left?p[0]-rr:p[0]+rr,y:p[1]+4,anchor:left?"end":"start"});
+  }
+  gL.selectAll("text").data(lab,d=>d.n.key).join("text").attr("class","place")
+    .attr("x",d=>d.x).attr("y",d=>d.y).attr("text-anchor",d=>d.anchor)
+    .attr("opacity",d=>!F||connected.has(d.n.key)?1:0.2).text(d=>d.n.name);
+}
+function geoLabels(g,P,box){
+  g.selectAll("text").data(S.base?GEO_LABELS:[]).join("text")
+    .attr("class",d=>"geo-label"+(d[3]?" water":"")).attr("text-anchor","middle")
+    .attr("x",d=>P(d[1],d[2])[0]).attr("y",d=>P(d[1],d[2])[1]).text(d=>d[0])
+    .attr("display",d=>{ const p=P(d[1],d[2]); return (p[0]<box.x0+30||p[0]>box.x1-30||p[1]<box.y0+12||p[1]>box.y1-8)?"none":null; });
+}
+// True when a place is drawn inside the inset, so the main map can leave it unlabelled
+function inInsetView(n){
+  if(!pInset||!insetBox) return false;
+  const q=pInset([n.lon,n.lat]); return q&&q[0]>insetBox.x0+8&&q[0]<insetBox.x1-8&&q[1]>insetBox.y0+28&&q[1]<insetBox.y1-8;
+}
+function renderOverlay(){
+  if(!projection) return;
+  const P=(lo,la)=>T.apply(projection([lo,la]));
+  const full={x0:0,y0:0,x1:W,y1:H};
+  geoLabels(gGeoLbl,P,full);
+  const inset=!!pInset;
+  // Locator box on the main map showing the enlarged area
+  if(inset){
+    const a=P(INSET_REGION[0][0],INSET_REGION[0][1]), b=P(INSET_REGION[1][0],INSET_REGION[1][1]);
+    gLocator.selectAll("rect").data([0]).join("rect").attr("class","locator")
+      .attr("x",Math.min(a[0],b[0])).attr("y",Math.min(a[1],b[1])).attr("width",Math.abs(b[0]-a[0])).attr("height",Math.abs(b[1]-a[1]));
+  } else gLocator.selectAll("*").remove();
+  drawLayer({P,grad:gradMain,prefix:"fg",gF:gFlows,gN:gNodes,gL:gLabels,gFc:gFac,facOk:pl=>!inset||!inRegion(pl),box:full,rf:inset?0.7:1,
+    labelOk:n=>!inset||!inRegion(n), maxLabels:W<600?6:12});
+  if(inset){
+    const PI=(lo,la)=>pInset([lo,la]);
+    geoLabels(gIGeo,PI,insetBox);
+    drawLayer({P:PI,grad:gradInset,prefix:"ig",gF:gIFlows,gN:gINodes,gL:gILabels,gFc:gIFac,facOk:inRegion,box:insetBox,rf:1,
+      labelOk:inRegion, maxLabels:W<600?10:24});
+  } else { [gIFlows,gINodes,gILabels,gIGeo,gIFac].forEach(g=>g.selectAll("*").remove()); gradInset.selectAll("*").remove(); }
+}
+const pct=c=>{ const v=c/current.total*100; return (v<1?"<1":Math.round(v))+"%"; };
+function nodeTip(n){
+  let h=`<b>${esc(n.name)}</b>`;
+  if(n.in) h+=`<br>${showCount(n.in)} children taken here`;
+  if(n.out) h+= n.in ? `<br>${showCount(n.out)} of them moved on from here` : `<br>${showCount(n.out)} children taken from here`;
+  const fp=S.fac.places.find(p=>p.key===n.key||(Math.abs(p.lat-n.lat)<0.01&&Math.abs(p.lon-n.lon)<0.01));
+  if(fp&&S.showFac) h+=`<br>${fmt(fp.total)} ${fp.total===1?"facility":"facilities"} documented`;
+  h+=`<div class="m">${S.focus===n.key?"Select again to show all routes":"Select to isolate its routes"}</div>`;
+  return h;
+}
+const tip=$("#tip");
+function showTip(e,html){
+  tip.innerHTML=html; tip.hidden=false;
+  const r=mapEl.getBoundingClientRect(); let x=e.clientX-r.left+14, y=e.clientY-r.top+14;
+  const tw=tip.offsetWidth, th=tip.offsetHeight;
+  if(x+tw>r.width-8) x=e.clientX-r.left-tw-14; if(y+th>r.height-8) y=e.clientY-r.top-th-14;
+  tip.style.left=Math.max(8,x)+"px"; tip.style.top=Math.max(8,y)+"px";
+}
+function hideTip(){ tip.hidden=true; }
+svg.on("click",()=>{ hideTip(); if(S.focus) setFocus(null); });
+
+function setFocus(k){
+  S.focus=k; const n=current.nodes.find(x=>x.key===k);
+  $("#chip").hidden=!k; if(n) $("#chipText").textContent=`Routes through ${n.name}`;
+  renderOverlay(); renderPanel();
+}
+
+/* ---------------- Facilities layer ---------------- */
+const FAC_COLORS={"camps and sanatoria":"#C2902F","schools and universities":"#5E8C61","orphanages and family centres":"#8A6BB0",
+  "medical facilities":"#3B8EA5","cadet schools":"#7A5638","military base":"#B4472E","religious site":"#9A8F55","hotel":"#7D8A96","type not broken down":"#B7BEC4"};
+const FAC_FALLBACK=["#C2902F","#5E8C61","#8A6BB0","#3B8EA5","#7A5638","#B4472E","#9A8F55","#7D8A96","#D17A9B","#6A9A3A"];
+S.fac={places:[],label:""}; S.showFac=true;
+function facColor(type,i){ return FAC_COLORS[type.toLowerCase()]||FAC_FALLBACK[i%FAC_FALLBACK.length]; }
+function facTypeTotals(){
+  const m=new Map(); S.fac.places.forEach(pl=>pl.types.forEach(t=>{ const o=m.get(t.type)||{type:t.type,count:0,color:t.color}; o.count+=t.count; m.set(t.type,o); }));
+  return [...m.values()].sort((a,b)=>(a.type.toLowerCase()==="type not broken down")-(b.type.toLowerCase()==="type not broken down")||b.count-a.count);
+}
+function ingestFac(text,label){
+  const {fields,data}=parseCSV(text);
+  const pick=list=>fields.find(f=>list.includes(hkey(f)));
+  const col={place:pick(["place","location","country","name","destination","region"]),type:pick(["type","facilitytype","category","kind"]),
+    count:pick(["count","n","facilities","number","total","sites"]),lat:pick(["lat","latitude"]),lon:pick(["lon","lng","long","longitude"]),notes:pick(["notes","note","source","comment"])};
+  if(!col.place||!col.count){ $("#facStatus").textContent=`Couldn't find a ${!col.place?"place":"count"} column in the facilities file. Columns found: ${fields.join(", ")||"none"}.`; return false; }
+  const places=new Map(), typeIdx=new Map(), miss=[];
+  for(const r of data){
+    const name=(r[col.place]||"").trim(), c=parseFloat(String(r[col.count]||"").replace(/[^0-9.\-]/g,""));
+    if(!name||!isFinite(c)||c<=0) continue;
+    const type=col.type?((r[col.type]||"").trim()||"Type not broken down"):"Type not broken down";
+    let la=parseFloat(col.lat&&r[col.lat]), lo=parseFloat(col.lon&&r[col.lon]);
+    if(!(isFinite(la)&&isFinite(lo))){ const g=lookup(name); if(!g){ miss.push(name); continue; } la=g.lat; lo=g.lon; }
+    const key=norm(name)||name;
+    const pl=places.get(key)||{key,name,lat:la,lon:lo,total:0,tmap:new Map(),notes:new Set()};
+    if(!typeIdx.has(type)) typeIdx.set(type,typeIdx.size);
+    pl.tmap.set(type,(pl.tmap.get(type)||0)+c); pl.total+=c;
+    if(col.notes&&r[col.notes]) pl.notes.add(r[col.notes].trim());
+    places.set(key,pl);
+  }
+  S.fac.places=[...places.values()].map(pl=>({...pl,types:[...pl.tmap.entries()].map(([type,count])=>({type,count,color:facColor(type,typeIdx.get(type))}))
+    .sort((a,b)=>(a.type.toLowerCase()==="type not broken down")-(b.type.toLowerCase()==="type not broken down")||b.count-a.count)}));
+  S.fac.label=label;
+  const tot=d3.sum(S.fac.places,p=>p.total);
+  $("#facStatus").textContent = S.fac.places.length ? `${label}: ${fmt(tot)} facilities in ${S.fac.places.length} place${S.fac.places.length>1?"s":""}.`+(miss.length?` Not placed: ${[...new Set(miss)].join(", ")} (add lat and lon).`:"") : "No usable rows in the facilities file.";
+  $("#facRemove").hidden=!S.fac.places.length; $("#facToggleWrap").hidden=!S.fac.places.length;
+  store.set("fac",text); store.set("facLabel",label);
+  return true;
+}
+function facTip(pl){
+  let h=`<b>${esc(pl.name)}</b><br>${fmt(pl.total)} ${pl.total===1?"facility":"facilities"} documented`;
+  h+=`<div style="margin-top:4px">`+pl.types.map(t=>`<div style="display:flex;gap:6px;align-items:center"><span style="width:9px;height:9px;border-radius:2px;background:${t.color};display:inline-block"></span>${esc(t.type)}: ${fmt(t.count)}</div>`).join("")+`</div>`;
+  if(pl.notes.size) h+=`<div class="m" style="margin-top:4px">${[...pl.notes].map(esc).join("<br>")}</div>`;
+  return h;
+}
+
+/* ---------------- Panel ---------------- */
+function renderPanel(){
+  if(!S.rows.length) return;
+  const c=current, pure=c.nodes.filter(n=>n.out&&!n.in), nSrc=(pure.length?pure:c.nodes.filter(n=>n.out)).length, nDst=c.nodes.filter(n=>n.in).length;
+  const tr=c.transit||[];
+  $("#summary").innerHTML = c.flows.length
+    ? `<strong>${fmt(c.total)}</strong> children on <strong>${fmt(c.flows.length)}</strong> route${c.flows.length>1?"s":""}, from ${fmt(nSrc)} place${nSrc>1?"s":""} of origin to ${fmt(nDst)} destination${nDst>1?"s":""}.`+
+      (tr.length&&pure.length?` Routes out of ${tr.map(n=>esc(n.name)).join(", ")} are onward transfers and are part of that total, not added to it.`:"")
+    : "No routes match these settings. Widen the period, pick another category or lower the minimum.";
+  const list=(el,key)=>{ const arr=c.nodes.filter(n=>n[key]&&!(key==="out"&&pure.length&&n.in)).sort((a,b)=>b[key]-a[key]).slice(0,8); const mx=arr[0]?arr[0][key]:1;
+    $(el).innerHTML=arr.map(n=>`<li><button data-k="${esc(n.key)}" aria-pressed="${S.focus===n.key}"><div class="line"><span class="nm">${esc(n.name)}</span><span class="val">${showCount(n[key])}</span></div><div class="bar" style="width:${Math.max(3,n[key]/mx*100)}%"></div></button></li>`).join(""); };
+  list("#rankSrc","out"); list("#rankDst","in");
+  const maxF=d3.max(S.rows,r=>r.c)||1; const m=$("#minc");
+  m.max=Math.max(2,Math.ceil(c.maxAll)); m.value=Math.min(S.min,m.max); $("#mincVal").textContent=fmt(S.min);
+}
+function renderLegend(){
+  const L=$("#legend"); if(!S.rows.length){ L.hidden=true; return; } L.hidden=false;
+  const sc=scales(); const mx=current.maxAll;
+  const nice=[mx, mx/4, mx/20].map(v=>{ if(v<1) return 1; const p=Math.pow(10,Math.floor(Math.log10(v))); return Math.max(1,Math.round(v/p)*p); });
+  const uniq=[...new Set(nice)].filter(v=>v<=mx||v===nice[0]);
+  const {src,dst}=S.colors;
+  const sw=v=>{ const w=Math.max(1.2,sc.w(v)); return `<svg width="64" height="${Math.max(12,w+4)}" aria-hidden="true"><defs><linearGradient id="lg${v}" x1="0" x2="1"><stop offset="0" stop-color="${src}"/><stop offset="1" stop-color="${dst}"/></linearGradient></defs><path d="${taper([2,(Math.max(12,w+4))/2],[62,(Math.max(12,w+4))/2],w,true)}" fill="url(#lg${v})" opacity=".85"/></svg>`; };
+  L.innerHTML = `<div><b>Children per route</b></div>`+uniq.map(v=>`<div class="lrow">${sw(v)}<span>${showCount(v)}</span></div>`).join("")+
+    `<div class="note">Lines run thick at the origin and thin at the destination.</div>`+
+    `<div class="keys"><div class="lrow" style="margin-top:8px"><span class="dot src"></span>Origin, sized by children taken from it</div>`+
+    `<div class="lrow"><span class="dot dst"></span>Destination, sized by children taken to it</div></div>`+
+    ((S.showFac&&S.fac.places.length)?`<div class="lsec"><b>Facilities by type</b></div><div class="facgrid">`+facTypeTotals().map(t=>`<div class="lrow" style="margin-top:0"><span class="sw" style="background:${t.color}"></span>${esc(t.type)}</div>`).join("")+`</div>`:"");
+}
+
+/* ---------------- Group project data (built in) ---------------- */
+const PROJECT_FLOWS=`source,destination,count,category,source_lat,source_lon,dest_lat,dest_lon,notes
+Ukraine,Russia,20651,Identified by Ukraine,49.0,31.4,56.0,44.0,"Children identified as deported or forcibly displaced, including forcible transfer within Russian-occupied Ukraine (Government of Ukraine, 2026). Russia's circle is placed in European Russia, where most documented facilities are (Yale HRL, 2025b)."
+Russia,Belarus,2442,"Yale HRL, 2023b",56.0,44.0,53.7,27.95,"At least 2,442 children aged 6 to 17, transported from occupied Ukraine through Russia to 13 facilities in Belarus (Yale HRL, 2023b). More than 2,000 went to the Dubrava children's centre, Minsk region (""Thousands of Ukrainian Children,"" 2023). Not stated whether these children are among Ukraine's 20,651 identified cases."
+Russia,North Korea,2,"Vakulina, 2025",56.0,44.0,40.1,127.2,"Two documented cases of children from occupied Donetsk oblast and occupied Crimea sent to Songdowon camp, North Korea (Vakulina, 2025). Organised by Russian authorities; the exact route is not documented."`;
+const PROJECT_FAC=`place,type,count,lat,lon,notes
+Russia,Camps and sanatoria,129,56.0,44.0,"Yale HRL (2025b), Appendix II. Types classified by the authors from facility names; Yale's own counts by type are in its Figure 3."
+Russia,Schools and universities,35,56.0,44.0,"Yale HRL (2025b), Appendix II. Types classified by the authors from facility names; Yale's own counts by type are in its Figure 3."
+Russia,Orphanages and family centres,11,56.0,44.0,"Yale HRL (2025b), Appendix II. Types classified by the authors from facility names; Yale's own counts by type are in its Figure 3."
+Russia,Medical facilities,8,56.0,44.0,"Yale HRL (2025b), Appendix II. Types classified by the authors from facility names; Yale's own counts by type are in its Figure 3."
+Russia,Cadet schools,2,56.0,44.0,"Yale HRL (2025b), Appendix II. Types classified by the authors from facility names; Yale's own counts by type are in its Figure 3."
+Russia,Military base,1,56.0,44.0,"Yale HRL (2025b), Appendix II. Types classified by the authors from facility names; Yale's own counts by type are in its Figure 3."
+Russia,Religious site,1,56.0,44.0,"Yale HRL (2025b), Appendix II. Types classified by the authors from facility names; Yale's own counts by type are in its Figure 3."
+Russia,Hotel,1,56.0,44.0,"Yale HRL (2025b), Appendix II. Types classified by the authors from facility names; Yale's own counts by type are in its Figure 3."
+"Occupied Ukraine (Crimea, Sevastopol, Donetsk oblast)",Camps and sanatoria,16,45.6,35.4,"Yale HRL (2025b), Appendix II. Types classified by the authors from facility names; Yale's own counts by type are in its Figure 3."
+"Occupied Ukraine (Crimea, Sevastopol, Donetsk oblast)",Schools and universities,2,45.6,35.4,"Yale HRL (2025b), Appendix II. Types classified by the authors from facility names; Yale's own counts by type are in its Figure 3."
+"Occupied Ukraine (Crimea, Sevastopol, Donetsk oblast)",Orphanages and family centres,1,45.6,35.4,"Yale HRL (2025b), Appendix II. Types classified by the authors from facility names; Yale's own counts by type are in its Figure 3."
+"Occupied Ukraine (Crimea, Sevastopol, Donetsk oblast)",Medical facilities,1,45.6,35.4,"Yale HRL (2025b), Appendix II. Types classified by the authors from facility names; Yale's own counts by type are in its Figure 3."
+"Occupied Ukraine (Crimea, Sevastopol, Donetsk oblast)",Cadet schools,2,45.6,35.4,"Yale HRL (2025b), Appendix II. Types classified by the authors from facility names; Yale's own counts by type are in its Figure 3."
+Belarus,Type not broken down,13,53.7,27.95,"Yale HRL (2023b, 2025a). Includes the Dubrava children's centre, Minsk region. Re-education at 8 or more and military training at 6 or more of the 13 (Yale HRL, 2023b)."
+North Korea,Camps and sanatoria,1,40.1,127.2,"Songdowon international children's camp near Wonsan (Vakulina, 2025)."`;
+const PROJECT_NOTE="Sources: Government of Ukraine (2026); Yale HRL (2023b, 2025b); Vakulina (2025). Facility types classified by the authors.";
+function loadProject(){ ingestFac(PROJECT_FAC,"Group project facilities"); ingest(PROJECT_FLOWS,"Group project data",false);
+  if(!S.note){ S.note=PROJECT_NOTE; $("#note").value=S.note; $("#caption").textContent=S.note; store.set("note",S.note); }
+  if(!S.mask){ S.mask=5; $("#mask").value=5; store.set("mask","5"); render(); } }
+
+/* ---------------- Fictional sample ---------------- */
+function sampleCSV(){
+  let seed=7; const rnd=()=>{ seed=(seed*16807)%2147483647; return (seed-1)/2147483646; };
+  const src=["Mariupol","Kherson","Kharkiv","Donetsk","Luhansk","Zaporizhzhia","Melitopol","Izium","Mykolaiv","Sievierodonetsk","Berdiansk","Nova Kakhovka","Volnovakha","Henichesk"];
+  const dst=["Rostov-on-Don","Taganrog","Moscow","Krasnodar","Anapa","Simferopol","Yevpatoria","Kursk","Belgorod","Voronezh","Nizhny Novgorod","Tyumen","Omsk","Minsk","Murmansk","Kaluga","Donetsk","Novosibirsk","Saint Petersburg","Kazan","Khabarovsk","Vladivostok","Wonsan","Magadan","Yuzhno-Sakhalinsk"];
+  const periods=["2022-Q1","2022-Q2","2022-Q3","2022-Q4","2023-Q1","2023-Q2","2023-Q3","2023-Q4"];
+  const cats=["Verified","Reported"];
+  const lines=["source,destination,count,period,category"];
+  src.forEach((s,si)=>{ const k=3+Math.floor(rnd()*6);
+    for(let j=0;j<k;j++){ const d=dst[Math.floor(Math.pow(rnd(),1.6)*dst.length)]; if(d===s) continue;
+      const p=periods[Math.floor(rnd()*periods.length)], c=cats[rnd()<0.6?0:1];
+      const n=Math.max(1,Math.round(Math.pow(rnd(),2.2)*220*(1-si/30)));
+      lines.push(`${s},${d},${n},${p},${c}`); } });
+  return lines.join("\n");
+}
+
+/* ---------------- Wiring ---------------- */
+document.querySelectorAll('[data-act="upload"]').forEach(b=>b.addEventListener("click",()=>$("#file").click()));
+document.querySelectorAll('[data-act="project"]').forEach(b=>b.addEventListener("click",loadProject));
+$("#facUpload").addEventListener("click",()=>$("#facFile").click());
+$("#facFile").addEventListener("change",e=>{ const f=e.target.files[0]; if(!f) return; const rd=new FileReader();
+  rd.onload=()=>{ if(ingestFac(String(rd.result),f.name)){ render(); } }; rd.readAsText(f); e.target.value=""; });
+$("#facRemove").addEventListener("click",()=>{ S.fac={places:[],label:""}; ["fac","facLabel"].forEach(store.del); store.set("facCleared","1");
+  $("#facRemove").hidden=true; $("#facToggleWrap").hidden=true; $("#facStatus").textContent="Facilities removed."; render(); });
+$("#facToggle").addEventListener("change",e=>{ S.showFac=e.target.checked; render(); });
+document.querySelectorAll('[data-act="sample"]').forEach(b=>b.addEventListener("click",()=>ingest(sampleCSV(),"Fictional sample",true)));
+$("#file").addEventListener("change",e=>{ const f=e.target.files[0]; if(!f) return; const rd=new FileReader();
+  rd.onload=()=>ingest(String(rd.result),f.name,false); rd.onerror=()=>{ $("#err").textContent="That file couldn't be read. Try saving it as CSV (UTF-8) and uploading again."; }; rd.readAsText(f); e.target.value=""; });
+$("#drawPaste").addEventListener("click",()=>{ const t=$("#paste").value; if(t.trim()) ingest(t,"Pasted data",false); else $("#err").textContent="Paste some CSV text first, starting with a header row."; });
+$("#clearData").addEventListener("click",()=>{ ["csv","label","sample"].forEach(store.del); S.rows=[]; S.unmatched=[]; S.sample=false; S.focus=null; $("#chip").hidden=true; setupControls(); fitView(); render(); });
+$("#cat").addEventListener("change",e=>{ S.cat=e.target.value; S.focus=null; $("#chip").hidden=true; render(); });
+$("#pFrom").addEventListener("change",e=>{ S.pFrom=+e.target.value; render(); });
+$("#pTo").addEventListener("change",e=>{ S.pTo=+e.target.value; render(); });
+$("#minc").addEventListener("input",e=>{ S.min=+e.target.value; $("#mincVal").textContent=fmt(S.min); render(); });
+$("#allLabels").addEventListener("change",e=>{ S.allLabels=e.target.checked; renderOverlay(); });
+$("#mask").addEventListener("input",e=>{ S.mask=Math.max(0,parseInt(e.target.value)||0); store.set("mask",String(S.mask)); render(); });
+$("#note").addEventListener("input",e=>{ S.note=e.target.value; $("#caption").textContent=S.note; store.set("note",S.note); });
+$("#chipClear").addEventListener("click",e=>{ e.stopPropagation(); setFocus(null); });
+["#rankSrc","#rankDst"].forEach(id=>$(id).addEventListener("click",e=>{ const b=e.target.closest("button[data-k]"); if(b) setFocus(S.focus===b.dataset.k?null:b.dataset.k); }));
+$("#zin").addEventListener("click",()=>svg.transition().duration(200).call(zoom.scaleBy,1.5));
+$("#zout").addEventListener("click",()=>svg.transition().duration(200).call(zoom.scaleBy,1/1.5));
+$("#zfit").addEventListener("click",()=>svg.transition().duration(250).call(zoom.transform,d3.zoomIdentity));
+$("#addLayer").addEventListener("click",()=>$("#geofile").click());
+$("#geofile").addEventListener("change",e=>{ const f=e.target.files[0]; if(!f) return; const rd=new FileReader();
+  rd.onload=()=>{ try{ const g=JSON.parse(String(rd.result)); if(!g.type) throw 0; S.userLayer=rewindFeature(g); $("#removeLayer").hidden=false; drawBase(); }
+    catch(err){ $("#baseStatus").textContent="That file isn't valid GeoJSON. Export it as GeoJSON with WGS84 (longitude, latitude) coordinates and try again."; } };
+  rd.readAsText(f); e.target.value=""; });
+$("#extent").addEventListener("change",e=>{ S.extent=e.target.value; store.set("extent",S.extent); fitView(); renderOverlay(); renderLegend(); });
+$("#insetToggle").addEventListener("change",e=>{ S.inset=e.target.checked; store.set("inset",S.inset?"1":"0"); fitView(); renderOverlay(); });
+$("#removeLayer").addEventListener("click",()=>{ S.userLayer=null; $("#removeLayer").hidden=true; drawBase(); });
+new ResizeObserver(()=>{ fitView(); renderOverlay(); }).observe(mapEl);
+const mq=window.matchMedia("(prefers-color-scheme: dark)"); if(mq.addEventListener) mq.addEventListener("change",render);
+
+/* ---------------- Export ---------------- */
+const NS="http://www.w3.org/2000/svg";
+let downloads=null;
+(async()=>{
+  try{ if(window.claude&&typeof window.claude.use==="function") downloads=await window.claude.use("downloads"); }catch(e){ downloads=null; }
+  // Outside Claude (e.g. GitHub Pages), fall back to an ordinary browser download
+  if(!downloads){ downloads={ save: async ({filename,data})=>{
+    const blob = data instanceof Blob ? data : new Blob([data],{type: filename.endsWith(".svg")?"image/svg+xml":"text/plain"});
+    const url=URL.createObjectURL(blob), a=document.createElement("a");
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000); return {status:"saved"}; } }; }
+  $("#exportWrap").hidden=!downloads; $("#exportNone").hidden=!!downloads;
+})();
+function el(tag,attrs,text){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(text!=null) e.textContent=text; return e; }
+function wrap(text,maxChars){ const words=String(text).split(/\s+/), lines=[]; let cur="";
+  words.forEach(w=>{ if((cur+" "+w).trim().length>maxChars && cur){ lines.push(cur); cur=w; } else cur=(cur+" "+w).trim(); }); if(cur) lines.push(cur); return lines; }
+function viewDescription(){
+  const bits=[];
+  if(S.cat!=="__all") bits.push(`Category: ${S.cat}`);
+  if(S.periods.length>1){ const lo=Math.min(S.pFrom,S.pTo), hi=Math.max(S.pFrom,S.pTo); bits.push(lo===hi?`Period: ${S.periods[lo]}`:`Period: ${S.periods[lo]} to ${S.periods[hi]}`); }
+  if(S.min>1) bits.push(`Routes with ${fmt(S.min)} or more children`);
+  const n=S.focus&&current.nodes.find(x=>x.key===S.focus); if(n) bits.push(`Routes through ${n.name}`);
+  return bits;
+}
+function buildExportSVG(){
+  const cs=getComputedStyle(document.documentElement), V=k=>cs.getPropertyValue(k).trim();
+  const C={panel:V("--panel"),ink:V("--ink"),muted:V("--muted"),rule:V("--rule"),src:V("--src"),dst:V("--dst")};
+  const FONT='"Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+  // Clone the live map and bake computed styles into each element
+  const src=document.getElementById("svg"), clone=src.cloneNode(true);
+  const a=[...src.querySelectorAll("*")], b=[...clone.querySelectorAll("*")];
+  const props=["fill","fill-opacity","stroke","stroke-width","stroke-opacity","stroke-dasharray","stroke-linejoin","opacity","font-size","font-weight","font-style","paint-order","vector-effect","text-anchor"];
+  for(let i=0;i<a.length;i++){
+    const tag=a[i].tagName.toLowerCase();
+    if(tag==="stop"||tag==="lineargradient"||tag==="defs") continue;
+    const st=getComputedStyle(a[i]); let css="";
+    for(const p of props){ const v=st.getPropertyValue(p); if(v) css+=`${p}:${v};`; }
+    if(st.getPropertyValue("display")==="none") css+="display:none;";
+    b[i].setAttribute("style",css); ["class","tabindex","role","aria-label"].forEach(x=>b[i].removeAttribute(x));
+  }
+  const small=W<600, HH=small?78:76, total=current.total;
+  const legendRows=[];
+  const mx=current.maxAll||1;
+  [mx,mx/4,mx/20].map(v=>{ if(v<1) return 1; const p=Math.pow(10,Math.floor(Math.log10(v))); return Math.max(1,Math.round(v/p)*p); })
+    .forEach(v=>{ if(!legendRows.includes(v)) legendRows.push(v); });
+  const noteLines=[];
+  if(S.note) noteLines.push(...wrap(S.note, Math.floor((small?W-32:W/2-40)/6.4)));
+  if(S.mask>0) noteLines.push(`Counts below ${fmt(S.mask)} are masked.`);
+  if(S.sample) noteLines.push("Fictional sample data. The numbers are random and describe no real events.");
+  noteLines.push(`Exported ${d3.timeFormat("%Y-%m-%d")(new Date())}. Boundaries: ${S.base&&S.base.mode==="atlas"?"Natural Earth":"simplified outline, approximate"}.`);
+  const facTypes=(S.showFac&&S.fac.places.length)?facTypeTotals():[];
+  const stack=W<900;
+  if(facTypes.length && !stack){ noteLines.length=0;
+    if(S.note) noteLines.push(...wrap(S.note, Math.max(28,Math.floor((W-600)/6.4))));
+    if(S.mask>0) noteLines.push(`Counts below ${fmt(S.mask)} are masked.`);
+    if(S.sample) noteLines.push("Fictional sample data. The numbers are random and describe no real events.");
+    noteLines.push(...wrap(`Exported ${d3.timeFormat("%Y-%m-%d")(new Date())}. Boundaries: ${S.base&&S.base.mode==="atlas"?"Natural Earth":"simplified outline, approximate"}.`, Math.max(28,Math.floor((W-600)/6.4)))); }
+  const legendH=20+legendRows.length*18+44;
+  const facH=facTypes.length?22+facTypes.length*16:0;
+  const notesH=noteLines.length*15+8;
+  const FH= stack ? legendH+(facH?facH+8:0)+notesH+24 : Math.max(legendH,facH,notesH)+28;
+  const out=el("svg",{xmlns:NS,width:W,height:H+HH+FH,viewBox:`0 0 ${W} ${H+HH+FH}`,"font-family":FONT});
+  out.appendChild(el("rect",{x:0,y:0,width:W,height:H+HH+FH,fill:C.panel}));
+  // Header
+  out.appendChild(el("text",{x:20,y:32,fill:C.ink,"font-size":small?16:19,"font-weight":650},"Missing children: origin and destination flows"));
+  const sub=[`${fmt(total)} children on ${fmt(current.flows.length)} route${current.flows.length===1?"":"s"}`].concat(viewDescription()).join(". ")+".";
+  wrap(sub, Math.floor((W-40)/6.8)).slice(0,2).forEach((ln,i)=>out.appendChild(el("text",{x:20,y:54+i*16,fill:C.muted,"font-size":12.5},ln)));
+  // Map
+  const map=el("svg",{x:0,y:HH,width:W,height:H,viewBox:`0 0 ${W} ${H}`,overflow:"hidden"});
+  while(clone.firstChild) map.appendChild(clone.firstChild);
+  out.appendChild(map);
+  out.appendChild(el("rect",{x:0.5,y:HH+0.5,width:W-1,height:H-1,fill:"none",stroke:C.rule}));
+  // Legend
+  const defs=el("defs",{}); out.appendChild(defs);
+  const g=el("linearGradient",{id:"exlg",x1:"0",x2:"1"}); g.appendChild(el("stop",{offset:"0","stop-color":C.src})); g.appendChild(el("stop",{offset:"1","stop-color":C.dst})); defs.appendChild(g);
+  const sc=scales(); let y=H+HH+26;
+  out.appendChild(el("text",{x:20,y,fill:C.ink,"font-size":12,"font-weight":600},"Children per route (thick end = origin)"));
+  legendRows.forEach(v=>{ y+=18; const w=Math.max(1.2,sc.w(v));
+    out.appendChild(el("path",{d:taper([20,y-4],[80,y-4],w,true),fill:"url(#exlg)",opacity:.85}));
+    out.appendChild(el("text",{x:90,y:y,fill:C.ink,"font-size":11.5},showCount(v))); });
+  y+=20; out.appendChild(el("circle",{cx:24,cy:y-4,r:4.5,fill:C.src}));
+  out.appendChild(el("text",{x:36,y,fill:C.ink,"font-size":11.5},"Origin, sized by children taken from it"));
+  y+=17; out.appendChild(el("circle",{cx:24,cy:y-4,r:4,fill:C.dst,"fill-opacity":.12,stroke:C.dst,"stroke-width":1.6}));
+  out.appendChild(el("text",{x:36,y,fill:C.ink,"font-size":11.5},"Destination, sized by children taken to it"));
+  // Facility types
+  if(facTypes.length){
+    let fx=stack?20:340, fy=stack?y+28:H+HH+26;
+    out.appendChild(el("text",{x:fx,y:fy,fill:C.ink,"font-size":12,"font-weight":600},"Facilities by type"));
+    facTypes.forEach(t=>{ fy+=16; out.appendChild(el("rect",{x:fx,y:fy-9,width:10,height:10,rx:2,fill:t.color}));
+      out.appendChild(el("text",{x:fx+16,y:fy,fill:C.ink,"font-size":11.5},`${t.type} (${fmt(t.count)})`)); });
+    if(stack) y=fy;
+  }
+  // Notes
+  let nx=stack?20:W-20, ny=stack?y+26:H+HH+26;
+  noteLines.forEach((ln,i)=>{ const isWarn=S.sample&&ln.startsWith("Fictional");
+    out.appendChild(el("text",{x:nx,y:ny+i*15,fill:isWarn?C.dst:C.muted,"font-size":11.5,"text-anchor":stack?"start":"end","font-weight":isWarn?600:400},ln)); });
+  return {svg:'<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(out), w:W, h:H+HH+FH};
+}
+function exportName(ext){ const d=d3.timeFormat("%Y-%m-%d")(new Date()); return `missing-children-flows-${d}${S.sample?"-SAMPLE":""}.${ext}`; }
+async function doSave(filename,data){
+  const msg=$("#exportMsg"); msg.textContent="";
+  try{ await downloads.save({filename,data}); msg.textContent=`Exported ${filename}.`; }
+  catch(e){ const c=e&&e.code;
+    msg.textContent = c==="declined" ? "Export cancelled." : c==="rate_limited" ? "An export prompt is already open. Finish it, then try again." : c==="too_large" ? "The image is too large. Try SVG, or make the window smaller and export again." : "Exporting isn't available in this view.";
+    if(["unavailable","not_granted","capability_disabled","capability_removed"].includes(c)){ $("#exportWrap").hidden=true; $("#exportNone").hidden=false; } }
+}
+$("#expSvg").addEventListener("click",()=>{ if(!downloads) return; hideTip(); const {svg}=buildExportSVG(); doSave(exportName("svg"),svg); });
+$("#expPng").addEventListener("click",async()=>{
+  if(!downloads) return; hideTip(); const msg=$("#exportMsg");
+  try{
+    msg.textContent="Preparing image…";
+    const {svg,w,h}=buildExportSVG(); const scale=Math.min(3,Math.max(2,2400/w));
+    const img=new Image(); img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg); await img.decode();
+    const cv=document.createElement("canvas"); cv.width=Math.round(w*scale); cv.height=Math.round(h*scale);
+    const ctx=cv.getContext("2d"); ctx.scale(scale,scale); ctx.drawImage(img,0,0,w,h);
+    const blob=await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error("png")),"image/png"));
+    await doSave(exportName("png"),blob);
+  }catch(e){ msg.textContent="The PNG couldn't be generated in this browser. Export SVG instead."; }
+});
+
+/* ---------------- Boot ---------------- */
+S.mask=parseInt(store.get("mask")||"0")||0; $("#mask").value=S.mask;
+S.note=store.get("note")||""; $("#note").value=S.note; $("#caption").textContent=S.note;
+S.inset=store.get("inset")!=="0"; $("#insetToggle").checked=S.inset;
+S.extent=store.get("extent")||"pacific"; if(!EXTENTS[S.extent]) S.extent="pacific"; $("#extent").value=S.extent;
+S.base=schematicBase();
+// Older saved copies of the project data used an outdated citation; refresh them
+if((store.get("csv")||"").includes("Russia Sent Abducted")||(store.get("fac")||"").includes("Russia Sent Abducted")){ ["csv","fac"].forEach(store.del); }
+if(S.note.includes("Russia Sent Abducted")){ S.note=PROJECT_NOTE; $("#note").value=S.note; $("#caption").textContent=S.note; store.set("note",S.note); }
+const saved=store.get("csv"), savedFac=store.get("fac");
+if(saved){
+  if(savedFac) ingestFac(savedFac, store.get("facLabel")||"Saved facilities");
+  ingest(saved, store.get("label")||"Saved data", store.get("sample")==="1");
+} else { loadProject(); }
+loadAtlas();
+})();
+</script>
+</body>
+</html>

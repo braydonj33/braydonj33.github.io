@@ -159,7 +159,7 @@ input[type=range]{width:100%;accent-color:var(--src)}
 <div class="app">
   <main class="map" id="map" aria-label="Map of origin and destination flows">
     <svg id="svg" role="img" aria-labelledby="title"></svg>
-    <div class="banner" id="banner" hidden>Fictional sample data. The numbers are random and describe no real events.</div>
+    <div class="banner" id="banner" hidden></div>
     <div class="chip" id="chip" hidden><span id="chipText"></span><button class="btn quiet" id="chipClear" aria-label="Show all flows">Show all</button></div>
     <div class="zoom">
       <button class="btn" id="zin" aria-label="Zoom in">+</button>
@@ -169,113 +169,29 @@ input[type=range]{width:100%;accent-color:var(--src)}
     <div class="legend" id="legend" hidden></div>
     <div class="caption" id="caption"></div>
     <div class="tip" id="tip" hidden></div>
-    <div class="empty" id="empty">
-      <div>
-        <p><b>No data loaded yet.</b></p>
-        <p class="hint">Upload a CSV with one row per origin–destination pair and a count. Each row becomes a line from where children were taken from to where they were taken.</p>
-        <div class="row" style="margin-top:12px"><button class="btn primary" data-act="upload">Upload CSV</button><button class="btn" data-act="sample">Try fictional sample</button></div>
-      </div>
-    </div>
+    <div class="empty" id="empty" hidden><div><p>Loading map…</p></div></div>
   </main>
 
   <aside>
-    <h1 id="title">Missing children: origin and destination flows</h1>
-    <p class="status" id="status">No data loaded</p>
-
-    <h2>Data</h2>
-    <div class="row">
-      <button class="btn primary" data-act="upload">Upload CSV</button>
-      <button class="btn" data-act="project">Load group project data</button>
-      <button class="btn" data-act="sample">Load fictional sample</button>
-      <button class="btn quiet" id="clearData">Clear data</button>
-    </div>
-    <input type="file" id="file" accept=".csv,.tsv,.txt,text/csv">
-    <div class="err" id="err" role="alert"></div>
-    <div id="unmatched"></div>
-    <label class="field">Facilities layer</label>
-    <div class="row">
-      <button class="btn" id="facUpload">Upload facilities CSV</button>
-      <button class="btn quiet" id="facRemove" hidden>Remove facilities</button>
-    </div>
-    <input type="file" id="facFile" accept=".csv,.tsv,.txt,text/csv">
-    <p class="hint" id="facStatus" style="margin-top:6px">Optional. Columns: place, type, count, and lat/lon for places the map doesn't recognise. Each place gets a bar split by facility type.</p>
-    <label class="check" id="facToggleWrap" hidden><input type="checkbox" id="facToggle" checked> Show facility bars</label>
-    <details>
-      <summary>Paste CSV text instead</summary>
-      <textarea id="paste" spellcheck="false" placeholder="source,destination,count&#10;Mariupol,Rostov-on-Don,120"></textarea>
-      <button class="btn" id="drawPaste">Draw pasted data</button>
-    </details>
-    <details>
-      <summary>Expected columns</summary>
-      <table class="cols">
-        <tr><td>source</td><td>Place children were taken from. Oblast, city or town name. Also accepts origin, from.</td></tr>
-        <tr><td>destination</td><td>Place children were taken to. Also accepts dest, to.</td></tr>
-        <tr><td>count</td><td>Number of children for that pair. Also accepts n, children, total.</td></tr>
-        <tr><td>period</td><td>Optional. Year, month or quarter, written so it sorts correctly (2022-Q3, 2023-05).</td></tr>
-        <tr><td>category</td><td>Optional. Any grouping, such as verification status or age band.</td></tr>
-        <tr><td>source_lat, source_lon, dest_lat, dest_lon</td><td>Optional. Needed only for places the built-in list doesn't recognise. They override the list when present.</td></tr>
-      </table>
-      <pre>source,destination,count,period,category,source_lat,source_lon,dest_lat,dest_lon
-Mariupol,Rostov-on-Don,120,2022-Q2,Verified,,,,
-Kherson oblast,Anapa,45,2022-Q4,Reported,,,,
-Example village,Example town,8,2023-Q1,Reported,47.10,37.20,52.10,41.30</pre>
-      <p class="hint">Rows with the same source and destination are added together. Oblast, krai and province names map to their administrative centre. About 170 places in Ukraine, Russia, Belarus and North Korea are recognised in English, Ukrainian or Russian spelling, and Korean for North Korean places. A country name such as "North Korea" maps to its capital.</p>
-    </details>
-
-    <section id="filters" hidden>
-      <h2>Show</h2>
-      <div id="catWrap"><label class="field" for="cat">Category</label><select id="cat"></select></div>
-      <div id="perWrap"><label class="field">Period</label>
-        <div class="pair"><select id="pFrom" aria-label="Period from"></select><span>to</span><select id="pTo" aria-label="Period to"></select></div>
-      </div>
-      <label class="field" for="minc">Hide routes with fewer than <b id="mincVal">1</b> children</label>
-      <input type="range" id="minc" min="1" max="100" value="1">
-      <label class="check"><input type="checkbox" id="allLabels"> Label every place</label>
-    </section>
+    <h1 id="title">Missing Ukrainian children: where they were taken</h1>
+    <p class="status" id="status"></p>
 
     <section id="totals" hidden>
-      <h2>In view</h2>
+      <h2>Overview</h2>
       <p class="summary" id="summary"></p>
       <div class="ranks">
-        <div><h3><span class="dot src"></span>Top origins</h3><ul class="rank src" id="rankSrc"></ul></div>
-        <div><h3><span class="dot dst"></span>Top destinations</h3><ul class="rank dst" id="rankDst"></ul></div>
+        <div><h3><span class="dot src"></span>Origins</h3><ul class="rank src" id="rankSrc"></ul></div>
+        <div><h3><span class="dot dst"></span>Destinations</h3><ul class="rank dst" id="rankDst"></ul></div>
       </div>
-      <p class="hint" style="margin-top:10px">Select a place here or on the map to isolate its routes.</p>
+      <p class="hint" style="margin-top:10px">Select a place here or on the map to isolate its routes. Hover over a route or facility bar to see its source.</p>
     </section>
 
-    <h2>Sharing</h2>
-    <label class="field" for="mask">Mask counts below</label>
-    <input type="number" id="mask" min="0" step="1" value="0">
-    <p class="hint" style="margin-top:6px">Counts under this number appear as "fewer than N" on the map and in the lists. Useful before sharing screenshots where small numbers could identify individual children. 0 turns masking off.</p>
-    <label class="field" for="note">Source line shown on the map</label>
-    <input type="text" id="note" placeholder="e.g. Source: organisation name, data as of date">
-    <div id="exportWrap" hidden>
-      <label class="field">Export the current view</label>
-      <div class="row"><button class="btn" id="expPng">Export PNG</button><button class="btn" id="expSvg">Export SVG</button></div>
-      <p class="hint" style="margin-top:6px">Exports what the map shows now, with your filters, zoom, focus and masking, plus a title, legend and your source line. PNG is high resolution for slides and documents; SVG stays editable in Illustrator, Inkscape or Figma.</p>
-      <p class="hint" id="exportMsg" role="status"></p>
-    </div>
-    <p class="hint" id="exportNone" hidden></p>
-    
-    <p class="hint" style="margin-top:6px">Data you load stays in this browser only. It is not uploaded or shared with anyone who opens this page's link.</p>
-
-    <h2>Basemap</h2>
-    <label class="field" for="extent">Map extent</label>
-    <select id="extent">
-      <option value="pacific">Ukraine to the Pacific, including North Korea</option>
-      <option value="europe">Ukraine and European Russia</option>
-      <option value="data">Fit to the data</option>
-    </select>
-    <p class="hint" style="margin-top:6px">Every place in your data stays on the map whichever extent you choose.</p>
-    <label class="check"><input type="checkbox" id="insetToggle" checked> Show an enlarged inset of Ukraine</label>
-    <p class="hint" style="margin-top:6px">Origins in Ukraine sit close together on a map this wide. The inset spreads them out and labels them, while the main map shows where routes end.</p>
+    <h2>About this map</h2>
+    <p class="hint">Lines show children identified as taken from Ukraine to Russia, and documented onward transfers from Russia to Belarus and North Korea. Bars show documented facilities in each country, split by type. Each country is one point, not a camp location. Counts are minimums, and counts below 5 are shown as "fewer than 5".</p>
+    <p class="hint">Sources: Government of Ukraine (2026); Humanitarian Research Lab at Yale School of Public Health (2023b, 2025a, 2025b); "Thousands of Ukrainian children taken to Belarus" (2023); Vakulina (2025). Facility types classified by the authors.</p>
     <p class="hint" id="baseStatus">Loading boundaries…</p>
-    <div class="row">
-      <button class="btn" id="addLayer">Add boundary layer (GeoJSON)</button>
-      <button class="btn quiet" id="removeLayer" hidden>Remove layer</button>
-    </div>
-    <input type="file" id="geofile" accept=".geojson,.json,application/geo+json,application/json">
-    <p class="hint" style="margin-top:8px">Use this for oblast boundaries, lines of control or any other outline you want drawn under the flows.</p>
+    <p class="hint">INT350 / HIS353 · Braydon Scott, Kyle Fannin, Roukiya Mahamoud, Jameson Stocker</p>
+    <div hidden aria-hidden="true"><div id="clearData"></div><input id="file"><div id="err"></div><div id="unmatched"></div><div id="facUpload"></div><div id="facRemove"></div><input id="facFile"><div id="facStatus"></div><div id="facToggleWrap"></div><input id="facToggle" type="checkbox"><div id="paste"></div><div id="drawPaste"></div><div id="filters"></div><div id="catWrap"></div><select id="cat"></select><div id="perWrap"></div><select id="pFrom"></select><select id="pTo"></select><div id="mincVal"></div><input id="minc"><input id="allLabels" type="checkbox"><input id="mask"><input id="note"><div id="exportWrap"></div><div id="expPng"></div><div id="expSvg"></div><div id="exportMsg"></div><div id="exportNone"></div><select id="extent"></select><input id="insetToggle" type="checkbox"><div id="addLayer"></div><div id="removeLayer"></div><input id="geofile"></div>
   </aside>
 </div>
 
@@ -518,11 +434,7 @@ const S = {
   cat:"__all", pFrom:0, pTo:0, min:1, mask:0, note:"", allLabels:false, focus:null,
   base:null, userLayer:null, view:null, colors:{}
 };
-const store = {
-  get(k){ try{ return localStorage.getItem("flowmap:"+k); }catch(e){ return null; } },
-  set(k,v){ try{ localStorage.setItem("flowmap:"+k,v); }catch(e){} },
-  del(k){ try{ localStorage.removeItem("flowmap:"+k); }catch(e){} }
-};
+const store = { get(){ return null; }, set(){}, del(){} };
 const fmt = d3.format(",");
 const showCount = c => (S.mask>0 && c<S.mask) ? `fewer than ${fmt(S.mask)}` : fmt(c);
 const $ = s=>document.querySelector(s);
@@ -669,10 +581,10 @@ async function loadAtlas(){
       land: topojson.merge(topo, geoms),
       ukraine: ua ? topojson.feature(topo, ua) : schematicBase().ukraine,
       borders: topojson.mesh(topo, topo.objects.countries, (a,b)=>a!==b) };
-    $("#baseStatus").textContent = "Country boundaries from Natural Earth (via world-atlas). Ukraine is drawn with its internationally recognised borders, including Crimea.";
+    $("#baseStatus").textContent = "Country boundaries from Natural Earth. Ukraine is drawn with its internationally recognised borders, including Crimea.";
   }catch(e){
     S.base = schematicBase();
-    $("#baseStatus").textContent = "Showing a simplified outline because detailed boundaries couldn't load. Coastlines and borders are approximate; add a GeoJSON layer for precise lines.";
+    $("#baseStatus").textContent = "Showing a simplified outline because detailed boundaries couldn't load. Coastlines and borders are approximate.";
   }
   fitView(); drawBase(); render();
 }
@@ -1241,19 +1153,10 @@ $("#expPng").addEventListener("click",async()=>{
 });
 
 /* ---------------- Boot ---------------- */
-S.mask=parseInt(store.get("mask")||"0")||0; $("#mask").value=S.mask;
-S.note=store.get("note")||""; $("#note").value=S.note; $("#caption").textContent=S.note;
-S.inset=store.get("inset")!=="0"; $("#insetToggle").checked=S.inset;
-S.extent=store.get("extent")||"pacific"; if(!EXTENTS[S.extent]) S.extent="pacific"; $("#extent").value=S.extent;
+S.mask=5; S.note=""; S.inset=true; S.extent="pacific";
 S.base=schematicBase();
-// Older saved copies of the project data used an outdated citation; refresh them
-if((store.get("csv")||"").includes("Russia Sent Abducted")||(store.get("fac")||"").includes("Russia Sent Abducted")){ ["csv","fac"].forEach(store.del); }
-if(S.note.includes("Russia Sent Abducted")){ S.note=PROJECT_NOTE; $("#note").value=S.note; $("#caption").textContent=S.note; store.set("note",S.note); }
-const saved=store.get("csv"), savedFac=store.get("fac");
-if(saved){
-  if(savedFac) ingestFac(savedFac, store.get("facLabel")||"Saved facilities");
-  ingest(saved, store.get("label")||"Saved data", store.get("sample")==="1");
-} else { loadProject(); }
+loadProject();
+$("#status").textContent="Data as of 3 October 2026";
 loadAtlas();
 })();
 </script>
